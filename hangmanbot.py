@@ -3,7 +3,7 @@ import hangman
 import random
 import score_system
 
-scorefile = "scores.txt"
+scorefile = "scores.json"
 
 def randomelement(elements):
 	return elements[random.randint(0, len(elements) - 1)]
@@ -28,6 +28,7 @@ class HangmanBot(basics.BasicBot):
 		self.jeopardy = read_responses("hangman_strings/jeopardy")
 
 		self.add_command("start", self.game_start, "Start a new game")
+		self.add_command("show", self.display, "Show the current game state")
 
 		self.score_system = score_system.BasicScoreSystem(self.hm)
 		self.score_system.load_game(scorefile)
@@ -55,16 +56,44 @@ class HangmanBot(basics.BasicBot):
 		self.push()
 
 	def game_start(self):
-		self.hm.start()
-		self.say("Game started!\n")
-		self.display()
+		if self.hm.game_state == "started":
+			self.saypush("A game has already been started you dingus\n")
+		else:
+			self.hm.start()
+			self.say("Game started!\n")
+			self.display()
+
+	def unknown_command(self, user, cmd):
+		if len(cmd[0]) == 1:
+			self.make_guess(user, cmd[0])
+		else:
+			self.saypush(randomelement(self.unknown))
+
+	def make_guess(self, user, letter):
+		if not self.hm.game_state == "started":
+			self.saypush("No game in progress, say \"hm: start\" to start one!\n")
+			return
+		ret = self.hm.guess(letter)
+		if ret == "invalid":
+			self.saypush(letter + " is not a valid guess.\n")
+		elif ret == "repeat":
+			self.saypush("Someone already guessed " + letter + "\n")
+		elif ret == "hit":
+			self.saypush(randomelement(self.hit))
+			self.score_system.score_correct_guess(user)
+			self.turn_end(user)
+		elif ret == "miss":
+			self.saypush(randomelement(self.miss))
+			self.score_system.score_incorrect_guess(user)
+			self.turn_end(user)
+		return
 
 	# Perform common actions at end of turn
 	def turn_end(self, user):
+		if self.hm.game_state == "win":
+			self.score_system.score_win_game(user)
+		elif self.hm.game_state == "lose":
+			self.score_system.score_lose_game(user)
+
 		self.score_system.save_game(scorefile)
 		self.display()
-	
-	# Perform clean up actions at end of game
-	def game_end(self):
-		self.users_jeopardy = []
-		return

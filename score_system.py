@@ -12,11 +12,10 @@ class BasicScoreSystem(object):
 		self.hm = hangman
 
 	def give_points(self, user, points):
-
 		if user not in self.users.keys():
 			self.users[user] = default_user()
 
-		self.users[user].score += points
+		self.users[user]["score"] += points
 
 	def score_correct_guess(self, user):
 		self.give_points(user, 1)

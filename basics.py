@@ -8,7 +8,6 @@ def print_dict(d):
 
 
 # Other bots should be a sub class of BasicBot
-# and implement process()
 #
 # Messages are added to a message string via say,
 # and pushed to slack via push
@@ -52,15 +51,8 @@ class BasicBot(object):
 		self.say(text)
 		self.push()
 
-	def say_help(self):
-		if self.description != "":
-			self.say(self.description + "\n")
-		for cmd in self.commands.keys():
-			self.say(self.commands[cmd][1] + "\n")
-		self.push()
-
-	def add_command(self, name, function, description):
-		self.commands[name] = [function, description]
+	def add_command(self, name, function, description, requires_user=False, has_args=False):
+		self.commands[name] = {"function": function, "description": description, "requires_user": requires_user, "has_args": has_args}
 
 	def process(self, message):
 		text = message["text"].lower()
@@ -68,19 +60,35 @@ class BasicBot(object):
 			return
 
 		cmd = text[len(self.short_name) + 1:].strip()  # Get actual command
-		cmds = cmd.split()
-		root_cmd = cmds[0]
-		args = cmds[1:]
+		splt_cmd = cmd.split()
+		root_cmd = splt_cmd[0]
+		params = splt_cmd[1:]
 
 		if root_cmd not in self.commands:
-			self.unknown_command()
+			self.unknown_command(message["user"], splt_cmd)
 		else:
-			self.commands[root_cmd][0](args)
+			if self.commands[root_cmd]["requires_user"]:
+				if self.commands[root_cmd]["has_args"]:
+					self.commands[root_cmd]["function"](message["user"], params)
+				else:
+					self.commands[root_cmd]["function"](message["user"])
+			else:
+				if self.commands[root_cmd]["has_args"]:
+					self.commands[root_cmd]["function"](params)
+				else:
+					self.commands[root_cmd]["function"]()
 
 		return
 
-	def unknown_command(self):
-		self.saypush("Unknown command")
+	def say_help(self):
+		if self.description != "":
+			self.say(self.description + "\n")
+		for cmd in self.commands.keys():
+			self.say("\"" + self.short_name + ": " + cmd + "\" - " + self.commands[cmd]["description"] + "\n")
+		self.push()
+
+	def unknown_command(self, user, cmd):
+		self.saypush("Unknown command: " + str(cmd))
 
 
 class BotHandler(object):
@@ -96,6 +104,7 @@ class BotHandler(object):
 	def add_bot(self, bot):
 		self.bots.append(bot)
 		bot.set_handler(self)
+		self.channels[self.channel_id(bot.allowed_channel)][2] = True
 
 	def test(self):
 		r = self.api.auth.test()
@@ -126,7 +135,7 @@ class BotHandler(object):
 		cs = self.get_channels()
 		self.channels.clear()
 		for c in cs:
-			self.channels[c["id"]] = [c["name"], 0]
+			self.channels[c["id"]] = [c["name"], 0, False]
 			self.get_new_messages(c["id"])  # Updates ts timestamp
 
 	def create_user_list(self):
@@ -148,8 +157,9 @@ class BotHandler(object):
 		return None
 
 	def update(self):
-		# import pdb; pdb.set_trace()
 		for ck in self.channels.keys():
+			if not self.channels[ck][2]:  # Channel has no bots in it, skip
+				continue
 			try:
 				new_messages = self.get_new_messages(ck, count=10)
 				new_messages.reverse()  # Want to process the oldest message first

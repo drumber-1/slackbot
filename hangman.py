@@ -1,7 +1,6 @@
 import random
 import re
-import pdb
-
+import os
 
 class Hangman(object):
 	def __init__(self, word_file):
@@ -68,8 +67,12 @@ class Hangman(object):
 			return "miss"
 
 	def generate_words(self, word_file):
+		if not os.path.isfile(word_file):
+			raise IOError("Could not find word file: " + word_file)
+
 		self.words = []
-		for line in word_file:
+		f = open(word_file)
+		for line in f:
 			# We only want words at least 5 letters long (> 5 including the \n)
 			if self.re_include.search(line) and len(line) > 5:
 				self.words.append(line.replace("\n", ""))
@@ -79,12 +82,3 @@ class Hangman(object):
 	def get_random_word(self):
 		x = random.randint(0, len(self.words) - 1)
 		return self.words[x]
-
-
-def main():
-	hm = Hangman()
-	pdb.set_trace()
-
-
-if __name__ == "__main__":
-	main()

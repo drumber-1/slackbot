@@ -3,7 +3,7 @@ import hangmanbot
 import os
 import signal
 
-key_test = "" # api key goes here
+key_test = ""  # api key goes here
 
 def handle_pdb(sig, frame):
 	import pdb
