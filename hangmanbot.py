@@ -96,9 +96,9 @@ class HangmanBot(basics.BasicBot):
 
 	# Perform common actions at end of turn
 	def turn_end(self, user):
-		self.score_system.save_game(scorefile)
 		self.display()
 		if self.hm.game_state == "win":
 			self.score_system.score_win_game(user)
 		elif self.hm.game_state == "lose":
 			self.score_system.score_lose_game(user)
+		self.score_system.save_game(scorefile)
