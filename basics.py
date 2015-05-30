@@ -69,7 +69,7 @@ class BasicBot(object):
 
 	def say_help(self):
 		if self.description != "":
-			self.say(self.description + "\n")
+			self.say(self.description + "\n\n")
 		self.say("Prefix commands with \"" + self.short_name + ":\"\n")
 		self.say(self.command_system.get_help())
 		self.push()

@@ -12,6 +12,8 @@ class Hangman(object):
 		self.letters_missed = ""
 		self.letters_guessed = ""
 		self.started = False
+		self.difficulty = 0
+		self.difficulty_current = 0  # Increasing the difficulty will only take place for the next game
 		# This is fudged for slacks text formatting
 		# which is not monospaced for multiple spaces
 		self.state_prefix = "+---+\n"
@@ -28,13 +30,15 @@ class Hangman(object):
 
 	def start(self):
 		self.word = self.get_random_word()
+		print("(hangman) " + self.word)
 		self.letters_missed = ""
 		self.letters_guessed = ""
 		self.started = True
+		self.difficulty_current = self.difficulty
 		self.game_state = "started"
 
 	def get_state_string(self):
-		n = min(len(self.letters_missed), len(self.states) - 1)
+		n = min(self.get_state(), len(self.states) - 1)
 		return self.state_prefix + self.states[n] + self.state_suffix
 
 	def get_word_string(self):
@@ -46,8 +50,19 @@ class Hangman(object):
 				s += self.blank_char
 		return s
 
-	def guess(self, c):
+	def get_state(self):
+		return len(self.letters_missed) + self.difficulty_current
 
+	def set_difficulty(self, new_difficulty):
+		if new_difficulty < 0:
+			print("(hangman) Cannot set difficulty to " + str(new_difficulty) + " (min 0)")
+			return
+		if new_difficulty > (len(self.states) - 1):
+			print("(hangman) Cannot set difficulty to " + str(new_difficulty) + " (max " + str(len(self.states) - 1) + ")")
+			return
+		self.difficulty = new_difficulty
+
+	def guess(self, c):
 		if not self.game_state == "started":
 			return "invalid"
 
@@ -62,7 +77,7 @@ class Hangman(object):
 			return "hit"
 		else:
 			self.letters_missed += c
-			if len(self.letters_missed) == (len(self.states) - 1):
+			if self.get_state() == (len(self.states) - 1):
 				self.game_state = "lose"
 			return "miss"
 

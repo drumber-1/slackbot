@@ -20,9 +20,10 @@ class HangmanBot(basics.BasicBot):
 		self.swears = ["fuck", "shit", "cunt"]
 
 		self.command_system.add_command("start", self.game_start, "Start a new game")
-		self.command_system.add_command("show", self.display, "Show the current game state")
+		self.command_system.add_command("show", self.display, "Show current game state")
 
-		self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush)
+		# self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush)
+		self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush)
 		self.score_system.load_game(scorefile)
 		self.command_system.sub_command_system = self.score_system.command_system
 		
@@ -95,10 +96,9 @@ class HangmanBot(basics.BasicBot):
 
 	# Perform common actions at end of turn
 	def turn_end(self, user):
+		self.score_system.save_game(scorefile)
+		self.display()
 		if self.hm.game_state == "win":
 			self.score_system.score_win_game(user)
 		elif self.hm.game_state == "lose":
 			self.score_system.score_lose_game(user)
-
-		self.score_system.save_game(scorefile)
-		self.display()

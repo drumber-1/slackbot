@@ -9,8 +9,13 @@ class BasicScoreSystem(object):
 		self.command_system = command_system.CommandSystem()
 		self.say = output_funct
 
-		self.command_system.add_command("score", self.say_score, "Show the current scores")
-		self.command_system.add_command("points", self.say_system, "Show the scoring system")
+		self.points_hit = 1
+		self.points_miss = -2
+		self.points_win = 10
+		self.points_loss = 0
+
+		self.command_system.add_command("score", self.say_score, "Show current scores")
+		self.command_system.add_command("points", self.say_system, "Show scoring system")
 
 	def give_points(self, user, points):
 		user_id = user["id"]
@@ -22,17 +27,23 @@ class BasicScoreSystem(object):
 		user = {"score": 0, "name": name}
 		return user
 
+	def update_user(self, user):  # If a user is from an old save, fills in missing fields with default values
+		default_user = self.create_user("a name")
+		for k in default_user.keys():
+			if k not in user:
+				user[k] = default_user[k]
+
 	def score_correct_guess(self, user):
-		self.give_points(user, 1)
+		self.give_points(user, self.points_hit)
 
 	def score_incorrect_guess(self, user):
-		self.give_points(user, -2)
+		self.give_points(user, self.points_miss)
 
 	def score_win_game(self, user):
-		self.give_points(user, max(15 - len(self.hm.word), 5))
+		self.give_points(user, self.points_win)
 
 	def score_lose_game(self, user):
-		pass
+		self.give_points(user, self.points_loss)
 
 	def say_score(self):
 		message = "Current scores:\n"
@@ -43,9 +54,10 @@ class BasicScoreSystem(object):
 
 	def say_system(self):
 		message = "Current scoring system:\n"
-		message += "\tCorrect letter: +1\n"
-		message += "\tIncorrect letter: -2\n"
-		message += "\tGame win: +(15 - word length) (min 5)\n"
+		message += "\tCorrect letter: " + str(self.points_hit) + "\n"
+		message += "\tIncorrect letter: " + str(self.points_miss) + "\n"
+		message += "\tGame win: " + str(self.points_win) + "\n"
+		message += "\tGame loss: " + str(self.points_loss) + "\n"
 		self.say(message)
 
 	def save_game(self, fname):
@@ -59,3 +71,102 @@ class BasicScoreSystem(object):
 		self.users = {}
 		fin = open(fname, 'r')
 		self.users = json.load(fin)
+		for k in self.users.keys():
+			self.update_user(self.users[k])
+
+class DifficultyScoringSystem(BasicScoreSystem):
+	def __init__(self, hangman, output_funct):
+		super(DifficultyScoringSystem, self).__init__(hangman, output_funct)
+
+		self.difficulty = 0
+		self.difficulty_max = 5
+		self.difficulty_strings = ["Ez mode", "Not-so-ez Mode", "Come Get Some", "Legendary", "Nightmare", "MAXIMUM OVER-BUSINESS"]
+		self.difficulty_points_hit = [1, 2, 3, 4, 5, 6]
+		self.difficulty_points_miss = [-2, -4, -9, -16, -25, -36]
+		self.difficulty_points_win = [10, 20, 30, 40, 50, 60]
+		self.difficulty_points_loss = [0, 0, 0, 0, 0, 0]
+		self.win_streak = 0
+		self.loss_streak = 0
+		self.wins_per_inc = 1
+		self.loses_per_dec = 1
+
+		self.command_system.add_command("difficulty", self.say_difficulty_message, "Show current difficulty")
+		self.command_system.add_command("stats", self.say_stats, "Show your stats", requires_user=True)
+
+	def create_user(self, name):
+		user = {"score": 0, "name": name, "wins": [0, 0, 0, 0, 0, 0]}
+		return user
+
+	def n_guesses(self):
+		return self.difficulty_max - self.difficulty + 1
+
+	def say_difficulty_message(self):
+		message = ""
+		message += "*" * self.difficulty
+		message += " " + self.difficulty_strings[self.difficulty] + " "
+		message += "*" * self.difficulty
+		message += "\n"
+		message += "("
+		if self.n_guesses() == 1:
+			message += str(self.n_guesses()) + " guess)\n"
+		else:
+			message += str(self.n_guesses()) + " guesses)\n"
+		self.say(message)
+
+	def say_stats(self, user):
+		message = "Stats for " + user["name"] + ":\n\n"
+		message += "Wins:\n"
+		for i in range(0, self.difficulty_max + 1):
+			message += "\tDifficulty " + str(i) + ": " + str(self.users[user["id"]]["wins"][i]) + "\n"
+		self.say(message)
+
+	def change_difficulty(self, dir):
+		if dir == "up":
+			if self.difficulty == self.difficulty_max - 1:
+				self.say("Difficulty has already reached maximum!")
+				return
+			self.difficulty += 1
+			self.hm.set_difficulty(self.difficulty)
+			self.say("Difficulty increased!\n")
+		elif dir == "down":
+			if self.difficulty == 0:
+				self.say("The game is already as easy as I can make it!")
+				return
+			self.difficulty -= 1
+			self.hm.set_difficulty(self.difficulty)
+			self.say("Difficulty decreased!\n")
+
+		self.say_difficulty_message()
+		self.points_hit = self.difficulty_points_hit[self.difficulty]
+		self.points_miss = self.difficulty_points_miss[self.difficulty]
+		self.points_win = self.difficulty_points_win[self.difficulty]
+		self.points_loss = self.difficulty_points_loss[self.difficulty]
+
+	def score_win_game(self, user):
+		super(DifficultyScoringSystem, self).score_win_game(user)
+		self.users[user["id"]]["wins"][self.difficulty] += 1
+		self.win_streak += 1
+		self.loss_streak = 0
+		if self.win_streak >= self.wins_per_inc:
+			self.change_difficulty("up")
+			self.win_streak = 0
+
+	def score_lose_game(self, user):
+		super(DifficultyScoringSystem, self).score_lose_game(user)
+		self.loss_streak += 1
+		self.win_streak = 0
+		if self.loss_streak >= self.loses_per_dec:
+			self.change_difficulty("down")
+			self.loss_streak = 0
+
+	def say_score(self):
+		super(DifficultyScoringSystem, self).say_score()
+
+	def say_system(self):
+		super(DifficultyScoringSystem, self).say_system()
+		message = "\n"
+		message += "Winning " + str(self.wins_per_inc) + " in a row will remove one guess\n"
+		message += "Losing " + str(self.loses_per_dec) + " in a row will return one guess\n"
+		message += "Higher difficulties give (and take away) more points!\n"
+		self.say(message)
+
