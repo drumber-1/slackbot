@@ -1,19 +1,9 @@
 import basics
 import hangman
-import random
 import score_system
+import utils
 
 scorefile = "scores.json"
-
-def randomelement(elements):
-	return elements[random.randint(0, len(elements) - 1)]
-
-def read_responses(fname):
-	responses = []
-	f = open(fname)
-	for line in f:
-		responses.append(line)
-	return responses		
 
 class HangmanBot(basics.BasicBot):
 	def __init__(self, channel):
@@ -21,17 +11,20 @@ class HangmanBot(basics.BasicBot):
 		self.hm = hangman.Hangman("./words.txt")
 		# self.hm = hangman.Hangman("/usr/share/dict/words")
 		
-		self.agress = read_responses("hangman_strings/agress")
-		self.hit = read_responses("hangman_strings/hit")
-		self.miss = read_responses("hangman_strings/miss")
-		self.unknown = read_responses("hangman_strings/unknown")
-		self.jeopardy = read_responses("hangman_strings/jeopardy")
+		self.agress = utils.read_responses("hangman_strings/agress")
+		self.hit = utils.read_responses("hangman_strings/hit")
+		self.miss = utils.read_responses("hangman_strings/miss")
+		self.unknown = utils.read_responses("hangman_strings/unknown")
 
-		self.add_command("start", self.game_start, "Start a new game")
-		self.add_command("show", self.display, "Show the current game state")
+		self.scorefile = "scores.json"
+		self.swears = ["fuck", "shit", "cunt"]
 
-		self.score_system = score_system.BasicScoreSystem(self.hm)
+		self.command_system.add_command("start", self.game_start, "Start a new game")
+		self.command_system.add_command("show", self.display, "Show the current game state")
+
+		self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush)
 		self.score_system.load_game(scorefile)
+		self.command_system.sub_command_system = self.score_system.command_system
 		
 	def display(self):
 		if self.hm.game_state == "ready":
@@ -63,11 +56,23 @@ class HangmanBot(basics.BasicBot):
 			self.say("Game started!\n")
 			self.display()
 
-	def unknown_command(self, user, cmd):
-		if len(cmd[0]) == 1:
-			self.make_guess(user, cmd[0])
+	def unknown_command(self, user, cmd, arguments):
+		if len(cmd) == 1:
+			self.make_guess(user, cmd)
 		else:
-			self.saypush(randomelement(self.unknown))
+			if self.has_swearing(cmd, arguments):
+				self.saypush(utils.randomelement(self.agress))
+			else:
+				self.saypush(utils.randomelement(self.unknown))
+
+	def has_swearing(self, cmd, arguments):
+		for swear in self.swears:
+			if swear in cmd:
+				return True
+			for arg in arguments:
+				if swear in arg:
+					return True
+		return False
 
 	def make_guess(self, user, letter):
 		if not self.hm.game_state == "started":
@@ -79,11 +84,11 @@ class HangmanBot(basics.BasicBot):
 		elif ret == "repeat":
 			self.saypush("Someone already guessed " + letter + "\n")
 		elif ret == "hit":
-			self.saypush(randomelement(self.hit))
+			self.saypush(utils.randomelement(self.hit))
 			self.score_system.score_correct_guess(user)
 			self.turn_end(user)
 		elif ret == "miss":
-			self.saypush(randomelement(self.miss))
+			self.saypush(utils.randomelement(self.miss))
 			self.score_system.score_incorrect_guess(user)
 			self.turn_end(user)
 		return

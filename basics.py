@@ -1,4 +1,5 @@
 import slacker
+import command_system
 
 # Prints out a dictionary all nice like
 # Useful for debugging
@@ -23,9 +24,9 @@ class BasicBot(object):
 
 		self.handler = None
 		self.message = ""
-		self.commands = {}
+		self.command_system = command_system.CommandSystem()
 
-		self.add_command("help", self.say_help, "Show help message")
+		self.command_system.add_command("help", self.say_help, "Show help message")
 
 	def set_handler(self, handler):
 		self.handler = handler
@@ -51,9 +52,6 @@ class BasicBot(object):
 		self.say(text)
 		self.push()
 
-	def add_command(self, name, function, description, requires_user=False, has_args=False):
-		self.commands[name] = {"function": function, "description": description, "requires_user": requires_user, "has_args": has_args}
-
 	def process(self, message):
 		text = message["text"].lower()
 		if not text.startswith(self.short_name + ":"):
@@ -61,33 +59,22 @@ class BasicBot(object):
 
 		cmd = text[len(self.short_name) + 1:].strip()  # Get actual command
 		splt_cmd = cmd.split()
-		root_cmd = splt_cmd[0]
-		params = splt_cmd[1:]
+		command = splt_cmd[0]
+		arguments = splt_cmd[1:]
+		user = {"id": message["user"], "name": self.handler.users[message["user"]]}
 
-		if root_cmd not in self.commands:
-			self.unknown_command(message["user"], splt_cmd)
-		else:
-			if self.commands[root_cmd]["requires_user"]:
-				if self.commands[root_cmd]["has_args"]:
-					self.commands[root_cmd]["function"](message["user"], params)
-				else:
-					self.commands[root_cmd]["function"](message["user"])
-			else:
-				if self.commands[root_cmd]["has_args"]:
-					self.commands[root_cmd]["function"](params)
-				else:
-					self.commands[root_cmd]["function"]()
-
+		if not self.command_system.process(user, command, arguments):
+			self.unknown_command(user, command, arguments)
 		return
 
 	def say_help(self):
 		if self.description != "":
 			self.say(self.description + "\n")
-		for cmd in self.commands.keys():
-			self.say("\"" + self.short_name + ": " + cmd + "\" - " + self.commands[cmd]["description"] + "\n")
+		self.say("Prefix commands with \"" + self.short_name + ":\"\n")
+		self.say(self.command_system.get_help())
 		self.push()
 
-	def unknown_command(self, user, cmd):
+	def unknown_command(self, user, cmd, arguments):
 		self.saypush("Unknown command: " + str(cmd))
 
 
