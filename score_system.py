@@ -133,18 +133,18 @@ class DifficultyScoringSystem(BasicScoreSystem):
 			if self.difficulty == self.difficulty_max - 1:
 				self.say("Difficulty has already reached maximum!")
 				return
-			self.difficulty += 1
-			self.hm.set_difficulty(self.difficulty)
 			self.say("Difficulty increased!\n")
+			self.set_difficulty(self.difficulty + 1)
 		elif dir == "down":
 			if self.difficulty == 0:
 				self.say("The game is already as easy as I can make it!")
 				return
-			self.difficulty -= 1
-			self.hm.set_difficulty(self.difficulty)
 			self.say("Difficulty decreased!\n")
+			self.set_difficulty(self.difficulty - 1)
 
-		self.say_difficulty_message()
+	def set_difficulty(self, new_difficulty):
+		self.difficulty = new_difficulty
+		self.hm.set_difficulty(new_difficulty)
 		self.points_hit = self.difficulty_points_hit[self.difficulty]
 		self.points_miss = self.difficulty_points_miss[self.difficulty]
 		self.points_win = self.difficulty_points_win[self.difficulty]
@@ -177,4 +177,26 @@ class DifficultyScoringSystem(BasicScoreSystem):
 		message += "Losing " + str(self.loses_per_dec) + " in a row will return one guess\n"
 		message += "Higher difficulties give (and take away) more points!\n"
 		self.say(message)
+
+	def save_game(self, fname):
+		fout = open(fname, 'w')
+		users_json = json.dumps(self.users)
+		fout.write(users_json)
+		fout.write(str(self.difficulty))
+		json.dump(self.users, fout)
+
+	def load_game(self, fname):
+		if not os.path.isfile(fname):
+			return
+
+		self.users = {}
+		fin = open(fname, 'r')
+		users_json_string = fin.readline()
+		self.users = json.loads(users_json_string)
+		for k in self.users.keys():
+			self.update_user(self.users[k])
+		diff_string = fin.readline()
+		self.set_difficulty(int(diff_string))
+
+
 
