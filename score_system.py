@@ -183,8 +183,8 @@ class DifficultyScoringSystem(BasicScoreSystem):
 		fout = open(fname, 'w')
 		users_json = json.dumps(self.users)
 		fout.write(users_json)
+		fout.write("\n")
 		fout.write(str(self.difficulty))
-		json.dump(self.users, fout)
 
 	def load_game(self, fname):
 		if not os.path.isfile(fname):
