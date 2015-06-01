@@ -124,7 +124,7 @@ class DifficultyScoringSystem(BasicScoreSystem):
 			if wins == 0:
 				message += "\tDifficulty " + str(i)
 			else:
-				message += "\tDifficulty " + str(self.difficulty_strings[i])
+				message += "\t" + str(self.difficulty_strings[i])
 			message += ": " + str(self.users[user["id"]]["wins"][i]) + "\n"
 		self.say(message)
 
