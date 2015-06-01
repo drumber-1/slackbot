@@ -141,6 +141,7 @@ class DifficultyScoringSystem(BasicScoreSystem):
 				return
 			self.say("Difficulty decreased!\n")
 			self.set_difficulty(self.difficulty - 1)
+		self.say_difficulty_message()
 
 	def set_difficulty(self, new_difficulty):
 		self.difficulty = new_difficulty
@@ -149,7 +150,6 @@ class DifficultyScoringSystem(BasicScoreSystem):
 		self.points_miss = self.difficulty_points_miss[self.difficulty]
 		self.points_win = self.difficulty_points_win[self.difficulty]
 		self.points_loss = self.difficulty_points_loss[self.difficulty]
-		self.say_difficulty_message()
 
 	def score_win_game(self, user):
 		super(DifficultyScoringSystem, self).score_win_game(user)
