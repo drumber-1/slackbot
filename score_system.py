@@ -120,7 +120,12 @@ class DifficultyScoringSystem(BasicScoreSystem):
 		message = "Stats for " + user["name"] + ":\n\n"
 		message += "Wins:\n"
 		for i in range(0, self.difficulty_max + 1):
-			message += "\tDifficulty " + str(i) + ": " + str(self.users[user["id"]]["wins"][i]) + "\n"
+			wins = self.users[user["id"]]["wins"][i]
+			if wins == 0:
+				message += "\tDifficulty " + str(i)
+			else:
+				message += "\tDifficulty " + str(self.difficulty_strings[i])
+			message += ": " + str(self.users[user["id"]]["wins"][i]) + "\n"
 		self.say(message)
 
 	def change_difficulty(self, dir):
