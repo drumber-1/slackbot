@@ -114,6 +114,9 @@ class DifficultyScoringSystem(BasicScoreSystem):
 		self.say(message)
 
 	def say_stats(self, user):
+		if user["id"] not in self.users:
+			self.say("You have no stats! Play some games first!")
+			return
 		message = "Stats for " + user["name"] + ":\n\n"
 		message += "Wins:\n"
 		for i in range(0, self.difficulty_max + 1):
