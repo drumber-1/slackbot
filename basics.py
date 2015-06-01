@@ -59,6 +59,9 @@ class BasicBot(object):
 
 		cmd = text[len(self.short_name) + 1:].strip()  # Get actual command
 		splt_cmd = cmd.split()
+		if len(cmd) == 0:
+			self.saypush("You gotta say something dude")
+			return
 		command = splt_cmd[0]
 		arguments = splt_cmd[1:]
 		user = {"id": message["user"], "name": self.handler.users[message["user"]]}
