@@ -80,14 +80,14 @@ class DifficultyScoringSystem(BasicScoreSystem):
 
 		self.difficulty = 0
 		self.difficulty_max = 5
-		self.difficulty_strings = ["Ez mode", "Not-so-ez Mode", "Come Get Some", "Legendary", "Nightmare", "MAXIMUM OVER-BUSINESS"]
+		self.difficulty_strings = ["E-zed mode", "Not-so-e-zed Mode", "Come Get Some", "Legendary", "Nightmare", "MAXIMUM OVER-BUSINESS"]
 		self.difficulty_points_hit = [1, 2, 3, 4, 5, 6]
 		self.difficulty_points_miss = [-2, -4, -9, -16, -25, -36]
 		self.difficulty_points_win = [10, 20, 30, 40, 50, 60]
 		self.difficulty_points_loss = [0, 0, 0, 0, 0, 0]
 		self.win_streak = 0
 		self.loss_streak = 0
-		self.wins_per_inc = 1
+		self.wins_per_inc = 2
 		self.loses_per_dec = 1
 
 		self.command_system.add_command("difficulty", self.say_difficulty_message, "Show current difficulty")
