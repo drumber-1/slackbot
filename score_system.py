@@ -130,8 +130,8 @@ class DifficultyScoringSystem(BasicScoreSystem):
 
 	def change_difficulty(self, dir):
 		if dir == "up":
-			if self.difficulty == self.difficulty_max - 1:
-				self.say("Difficulty has already reached maximum!")
+			if self.difficulty == self.difficulty_max:
+				self.say("No more difficulty levels! You win I guess?")
 				return
 			self.say("Difficulty increased!\n")
 			self.set_difficulty(self.difficulty + 1)
