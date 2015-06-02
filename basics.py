@@ -158,7 +158,7 @@ class BotHandler(object):
 			except slacker.Error as e:
 				print("(handler) slacker.Error getting messages: " + str(e))
 				continue
-			except AssertionError:
+			except AssertionError as e:
 				print("(handler) AssertionError getting messages: " + str(e))
 				continue
 
