@@ -1,5 +1,6 @@
 import slacker
 import command_system
+import requests
 
 # Prints out a dictionary all nice like
 # Useful for debugging
@@ -160,6 +161,9 @@ class BotHandler(object):
 				continue
 			except AssertionError as e:
 				print("(handler) AssertionError getting messages: " + str(e))
+				continue
+			except requests.packages.urllib3.exceptions.ProtocolError as e:
+				print("(handler) ProtocolError getting messages: " + str(e))
 				continue
 
 			for b in self.bots:
