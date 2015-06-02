@@ -160,6 +160,7 @@ class BotHandler(object):
 				continue
 			except AssertionError:
 				print("(handler) AssertionError getting messages: " + str(e))
+				continue
 
 			for b in self.bots:
 				if not self.channels[ck][0] == b.allowed_channel:
