@@ -46,7 +46,7 @@ class API(object):
         response = method(API_BASE_URL.format(api=api),
                           **kwargs)
 
-        assert response.status_code == 200
+        assert response.status_code == 200, "Status code: " + str(response.status_code)
 
         response = Response(response.text)
         if not response.successful:

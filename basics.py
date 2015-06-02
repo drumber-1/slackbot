@@ -156,8 +156,10 @@ class BotHandler(object):
 				if len(new_messages) > 0:
 					print("(handler) Got " + str(len(new_messages)) + " new messages from " + self.channels[ck][0])
 			except slacker.Error as e:
-				print("(handler) Error getting messages: " + str(e))
+				print("(handler) slacker.Error getting messages: " + str(e))
 				continue
+			except AssertionError:
+				print("(handler) AssertionError getting messages: " + str(e))
 
 			for b in self.bots:
 				if not self.channels[ck][0] == b.allowed_channel:
