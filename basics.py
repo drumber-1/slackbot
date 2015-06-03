@@ -159,11 +159,8 @@ class BotHandler(object):
 			except slacker.Error as e:
 				print("(handler) slacker.Error getting messages: " + str(e))
 				continue
-			except AssertionError as e:
-				print("(handler) AssertionError getting messages: " + str(e))
-				continue
-			except requests.packages.urllib3.exceptions.ProtocolError as e:
-				print("(handler) ProtocolError getting messages: " + str(e))
+			except requests.exceptions.RequestException as e:
+				print("(handler) RequestException getting messages: " + str(e))
 				continue
 
 			for b in self.bots:
