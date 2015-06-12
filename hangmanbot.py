@@ -1,13 +1,13 @@
-import basics
+import commandbot
 import hangman
 import score_system
 import utils
 
 scorefile = "scores.json"
 
-class HangmanBot(basics.BasicBot):
-	def __init__(self, channel):
-		super(HangmanBot, self).__init__("HangmanBot", "hm", channel, avatar="http://imgur.com/juZ7nAC.jpg", descripton="A bot for playing hangman!")
+class HangmanBot(commandbot.CommandBot):
+	def __init__(self, api_key, channel):
+		super(HangmanBot, self).__init__(api_key, channel, "hm", description="A bot for playing hangman!")
 		self.hm = hangman.Hangman("./words.txt")
 		# self.hm = hangman.Hangman("/usr/share/dict/words")
 		
