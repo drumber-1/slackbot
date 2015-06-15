@@ -80,14 +80,14 @@ class DifficultyScoringSystem(BasicScoreSystem):
 
 		self.difficulty = 0
 		self.difficulty_max = 5
-		self.difficulty_strings = ["Ez mode", "Not-so-ez Mode", "Come Get Some", "Legendary", "Nightmare", "MAXIMUM OVER-BUSINESS"]
+		self.difficulty_strings = ["E-zed mode", "Not-so-e-zed Mode", "Come Get Some", "Legendary", "Nightmare", "MAXIMUM OVER-BUSINESS"]
 		self.difficulty_points_hit = [1, 2, 3, 4, 5, 6]
 		self.difficulty_points_miss = [-2, -4, -9, -16, -25, -36]
 		self.difficulty_points_win = [10, 20, 30, 40, 50, 60]
 		self.difficulty_points_loss = [0, 0, 0, 0, 0, 0]
 		self.win_streak = 0
 		self.loss_streak = 0
-		self.wins_per_inc = 1
+		self.wins_per_inc = 2
 		self.loses_per_dec = 1
 
 		self.command_system.add_command("difficulty", self.say_difficulty_message, "Show current difficulty")
@@ -114,29 +114,38 @@ class DifficultyScoringSystem(BasicScoreSystem):
 		self.say(message)
 
 	def say_stats(self, user):
+		if user["id"] not in self.users:
+			self.say("You have no stats! Play some games first!")
+			return
 		message = "Stats for " + user["name"] + ":\n\n"
 		message += "Wins:\n"
 		for i in range(0, self.difficulty_max + 1):
-			message += "\tDifficulty " + str(i) + ": " + str(self.users[user["id"]]["wins"][i]) + "\n"
+			wins = self.users[user["id"]]["wins"][i]
+			if wins == 0:
+				message += "\tDifficulty " + str(i)
+			else:
+				message += "\t" + str(self.difficulty_strings[i])
+			message += ": " + str(self.users[user["id"]]["wins"][i]) + "\n"
 		self.say(message)
 
 	def change_difficulty(self, dir):
 		if dir == "up":
-			if self.difficulty == self.difficulty_max - 1:
-				self.say("Difficulty has already reached maximum!")
+			if self.difficulty == self.difficulty_max:
+				self.say("No more difficulty levels! You win I guess?")
 				return
-			self.difficulty += 1
-			self.hm.set_difficulty(self.difficulty)
 			self.say("Difficulty increased!\n")
+			self.set_difficulty(self.difficulty + 1)
 		elif dir == "down":
 			if self.difficulty == 0:
 				self.say("The game is already as easy as I can make it!")
 				return
-			self.difficulty -= 1
-			self.hm.set_difficulty(self.difficulty)
 			self.say("Difficulty decreased!\n")
-
+			self.set_difficulty(self.difficulty - 1)
 		self.say_difficulty_message()
+
+	def set_difficulty(self, new_difficulty):
+		self.difficulty = new_difficulty
+		self.hm.set_difficulty(new_difficulty)
 		self.points_hit = self.difficulty_points_hit[self.difficulty]
 		self.points_miss = self.difficulty_points_miss[self.difficulty]
 		self.points_win = self.difficulty_points_win[self.difficulty]
@@ -170,3 +179,22 @@ class DifficultyScoringSystem(BasicScoreSystem):
 		message += "Higher difficulties give (and take away) more points!\n"
 		self.say(message)
 
+	def save_game(self, fname):
+		fout = open(fname, 'w')
+		users_json = json.dumps(self.users)
+		fout.write(users_json)
+		fout.write("\n")
+		fout.write(str(self.difficulty))
+
+	def load_game(self, fname):
+		if not os.path.isfile(fname):
+			return
+
+		self.users = {}
+		fin = open(fname, 'r')
+		users_json_string = fin.readline()
+		self.users = json.loads(users_json_string)
+		for k in self.users.keys():
+			self.update_user(self.users[k])
+		diff_string = fin.readline()
+		self.set_difficulty(int(diff_string))
