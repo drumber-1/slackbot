@@ -47,7 +47,7 @@ class BasicBot(object):
 				if e["type"] == "message":
 					self.process_event(e)
 			else:
-				self.pp.pprint(e)
+				pass  # TODO: check 'ok' flag of message confirmations
 
 	def get_users(self):
 		users = self.sc.server.users
