@@ -18,9 +18,9 @@ class BasicScoreSystem(object):
 		self.command_system.add_command("points", self.say_system, "Show scoring system")
 
 	def give_points(self, user, points):
-		user_id = user["id"]
+		user_id = user.id
 		if user_id not in self.users.keys():
-			self.users[user_id] = self.create_user(user["name"])
+			self.users[user_id] = self.create_user(user.name)
 		self.users[user_id]["score"] += points
 
 	def create_user(self, name):
@@ -114,18 +114,18 @@ class DifficultyScoringSystem(BasicScoreSystem):
 		self.say(message)
 
 	def say_stats(self, user):
-		if user["id"] not in self.users:
+		if user.id not in self.users:
 			self.say("You have no stats! Play some games first!")
 			return
-		message = "Stats for " + user["name"] + ":\n\n"
+		message = "Stats for " + user.name + ":\n\n"
 		message += "Wins:\n"
 		for i in range(0, self.difficulty_max + 1):
-			wins = self.users[user["id"]]["wins"][i]
+			wins = self.users[user.id]["wins"][i]
 			if wins == 0:
 				message += "\tDifficulty " + str(i)
 			else:
 				message += "\t" + str(self.difficulty_strings[i])
-			message += ": " + str(self.users[user["id"]]["wins"][i]) + "\n"
+			message += ": " + str(self.users[user.id]["wins"][i]) + "\n"
 		self.say(message)
 
 	def change_difficulty(self, dir):
@@ -153,7 +153,7 @@ class DifficultyScoringSystem(BasicScoreSystem):
 
 	def score_win_game(self, user):
 		super(DifficultyScoringSystem, self).score_win_game(user)
-		self.users[user["id"]]["wins"][self.difficulty] += 1
+		self.users[user.id]["wins"][self.difficulty] += 1
 		self.win_streak += 1
 		self.loss_streak = 0
 		if self.win_streak >= self.wins_per_inc:
