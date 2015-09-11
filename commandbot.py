@@ -17,13 +17,17 @@ class CommandBot(basicbot.BasicBot):
 			pass  # TODO: Process other events
 
 	def process_message(self, message):
-		if message["user"] not in self.users:
-			print("(commandbot) {user} not recognised)".format(user=message["user"]["name"]))
-			return
-		user = self.users[message["user"]]
+		if "user" in message:
+			if message["user"] not in self.users:
+				print("(commandbot) {user} not recognised)".format(user=message["user"]["name"]))
+				return
+			user = self.users[message["user"]]
 
-		text = message["text"].lower()
-		if not text.startswith(self.short_name + ":"):
+			text = message["text"].lower()
+			if not text.startswith(self.short_name + ":"):
+				return
+		else:
+			print("(commandbot) No user field in message, probably a bot or something")
 			return
 
 		cmd = text[len(self.short_name) + 1:].strip()  # Get actual command

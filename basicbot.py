@@ -16,7 +16,6 @@ class BasicBot(object):
 		self.channel = channel
 		self.users = self.get_users()
 		self.message = ""
-
 		self.pp = pprint.PrettyPrinter(indent=4)
 
 	def say(self, text):
