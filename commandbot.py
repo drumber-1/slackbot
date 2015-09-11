@@ -1,5 +1,6 @@
 import basicbot
 import command_system
+import sys
 
 class CommandBot(basicbot.BasicBot):
 	def __init__(self, api_key, channel, short_name, description=""):
@@ -38,7 +39,12 @@ class CommandBot(basicbot.BasicBot):
 		command = splt_cmd[0]
 		arguments = splt_cmd[1:]
 
+		sys.stdout.write("(commandbot) Got command: \"" + command + "\"")
+		if len(arguments) != 0:
+			sys.stdout.write(" with arguments: " + str(arguments))
+		sys.stdout.write("\n")
 		if not self.command_system.process(user, command, arguments):
+			print("(commandbot) Command unrecognised")
 			self.unknown_command(user, command, arguments)
 		return
 
