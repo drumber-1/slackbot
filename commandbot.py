@@ -16,7 +16,7 @@ class CommandBot(basicbot.BasicBot):
 			if event["type"] == "message":
 				self.process_message(event)
 			else:
-				pass  # TODO: Process other events
+				self.runoff_event(event)
 
 	def process_message(self, message):
 		if "subtype" in message:
@@ -50,8 +50,9 @@ class CommandBot(basicbot.BasicBot):
 			sys.stdout.write(" with arguments: " + str(arguments))
 		sys.stdout.write("\n")
 		if not self.command_system.process(user, command, arguments):
-			print("(commandbot) Command unrecognised")
-			self.unknown_command(user, command, arguments)
+			if not self.runoff_message(user, command, arguments, message):
+				print("(commandbot) Command unrecognised")
+				self.unknown_command(user, command, arguments)
 		return
 
 	def say_help(self):
@@ -60,6 +61,12 @@ class CommandBot(basicbot.BasicBot):
 		self.say("Prefix commands with \"" + self.short_name + ":\"\n")
 		self.say(self.command_system.get_help())
 		self.push()
+
+	def runoff_event(self, event):
+		return False
+
+	def runoff_message(self, user, cmd, arguments, message):
+		return False
 
 	def unknown_command(self, user, cmd, arguments):
 		self.saypush("Unknown command: " + str(cmd))
