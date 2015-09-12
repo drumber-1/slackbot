@@ -27,7 +27,7 @@ class BasicBot(object):
 		message_abv = self.message.split("\n")[0]
 		nlines = len(self.message.split("\n"))
 		if nlines > 1:
-			message_abv += "... [" + str(nlines - 1) + " additional lines]"
+			message_abv += " ... [" + str(nlines - 1) + " additional lines]"
 		print("(bot) pushing message: " + message_abv)
 		self.sc.rtm_send_message(self.channel, self.message)
 
