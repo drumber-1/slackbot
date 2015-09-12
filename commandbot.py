@@ -12,12 +12,18 @@ class CommandBot(basicbot.BasicBot):
 		self.command_system.add_command("help", self.say_help, "Show help message")
 
 	def process_event(self, event):
-		if event["type"] == "message":
-			self.process_message(event)
-		else:
-			pass  # TODO: Process other events
+		if "type" in event:  # Errors / message confirmation don't have type
+			if event["type"] == "message":
+				self.process_message(event)
+			else:
+				pass  # TODO: Process other events
 
 	def process_message(self, message):
+		if "subtype" in message:
+			if message["subtype"] == "message_changed":
+				self.process_message(message["message"])
+				return
+
 		if "user" in message:
 			if message["user"] not in self.users:
 				print("(commandbot) {user} not recognised)".format(user=message["user"]["name"]))

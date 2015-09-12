@@ -45,11 +45,7 @@ class BasicBot(object):
 	def update(self):
 		events = self.sc.rtm_read()
 		for e in events:
-			if "type" in e:  # Errors / message confirmation don't have type
-				if e["type"] == "message":
-					self.process_event(e)
-			else:
-				pass  # TODO: check 'ok' flag of message confirmations
+			self.process_event(e)
 
 	def get_users(self):
 		users = self.sc.server.users
