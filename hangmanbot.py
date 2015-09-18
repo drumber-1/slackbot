@@ -57,14 +57,18 @@ class HangmanBot(commandbot.CommandBot):
 			self.say("Game started!\n")
 			self.display()
 
-	def unknown_command(self, user, cmd, arguments):
+	def runoff_message(self, user, cmd, arguments, message):
 		if len(cmd) == 1:
 			self.make_guess(user, cmd)
+			return True
 		else:
-			if self.has_swearing(cmd, arguments):
-				self.saypush(utils.randomelement(self.agress))
-			else:
-				self.saypush(utils.randomelement(self.unknown))
+			return False
+
+	def unknown_command(self, user, cmd, arguments):
+		if self.has_swearing(cmd, arguments):
+			self.saypush(utils.randomelement(self.agress))
+		else:
+			self.saypush(utils.randomelement(self.unknown))
 
 	def has_swearing(self, cmd, arguments):
 		for swear in self.swears:
