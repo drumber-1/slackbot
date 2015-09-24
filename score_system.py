@@ -62,15 +62,18 @@ class BasicScoreSystem(object):
 
 	def save_game(self, fname):
 		fout = open(fname, 'w')
-		json.dump(self.users, fout)
+		
+		save_state = {}
+		save_state["users"] = self.users
+		json.dump(save_state, fout)
 
 	def load_game(self, fname):
 		if not os.path.isfile(fname):
 			return
 
-		self.users = {}
 		fin = open(fname, 'r')
-		self.users = json.load(fin)
+		save_state = json.load(fin)
+		self.users = save_state["users"]
 		for k in self.users.keys():
 			self.update_user(self.users[k])
 
@@ -94,7 +97,10 @@ class DifficultyScoringSystem(BasicScoreSystem):
 		self.command_system.add_command("stats", self.say_stats, "Show your stats", requires_user=True)
 
 	def create_user(self, name):
-		user = {"score": 0, "name": name, "wins": [0, 0, 0, 0, 0, 0]}
+		user = {"score": 0,
+		        "name": name,
+		        "wins": [0, 0, 0, 0, 0, 0],
+		        "loses": [0, 0, 0, 0, 0, 0]}
 		return user
 
 	def n_guesses(self):
@@ -117,15 +123,20 @@ class DifficultyScoringSystem(BasicScoreSystem):
 		if user.id not in self.users:
 			self.say("You have no stats! Play some games first!")
 			return
-		message = "Stats for " + user.name + ":\n\n"
-		message += "Wins:\n"
+		message = "Stats for " + user.name + ":\n"
+		
+		message += "\nScore:\n"
+		message += "\t" + self.users[user.id]["score"]
+		
+		message += "\nWins / Loses:\n"
 		for i in range(0, self.difficulty_max + 1):
 			wins = self.users[user.id]["wins"][i]
+			loses = self.users[user.id]["loses"][i]
 			if wins == 0:
 				message += "\tDifficulty " + str(i)
 			else:
 				message += "\t" + str(self.difficulty_strings[i])
-			message += ": " + str(self.users[user.id]["wins"][i]) + "\n"
+			message += ": " + str(wins) + " / " + str(loses) + "\n"
 		self.say(message)
 
 	def change_difficulty(self, dir):
@@ -162,14 +173,12 @@ class DifficultyScoringSystem(BasicScoreSystem):
 
 	def score_lose_game(self, user):
 		super(DifficultyScoringSystem, self).score_lose_game(user)
+		self.users[user.id]["loses"][self.difficulty] += 1
 		self.loss_streak += 1
 		self.win_streak = 0
 		if self.loss_streak >= self.loses_per_dec:
 			self.change_difficulty("down")
 			self.loss_streak = 0
-
-	def say_score(self):
-		super(DifficultyScoringSystem, self).say_score()
 
 	def say_system(self):
 		super(DifficultyScoringSystem, self).say_system()
@@ -181,20 +190,75 @@ class DifficultyScoringSystem(BasicScoreSystem):
 
 	def save_game(self, fname):
 		fout = open(fname, 'w')
-		users_json = json.dumps(self.users)
-		fout.write(users_json)
-		fout.write("\n")
-		fout.write(str(self.difficulty))
+		
+		save_state = {}
+		save_state["users"] = self.users
+		save_state["difficulty"] = self.difficulty
+		json.dump(save_state, fout)
 
 	def load_game(self, fname):
 		if not os.path.isfile(fname):
-			return
+				return
 
-		self.users = {}
 		fin = open(fname, 'r')
-		users_json_string = fin.readline()
-		self.users = json.loads(users_json_string)
+		save_state = json.load(fin)
+		self.users = save_state["users"]
+		self.set_difficulty(int(save_state["difficulty"]))
+		
 		for k in self.users.keys():
 			self.update_user(self.users[k])
-		diff_string = fin.readline()
-		self.set_difficulty(int(diff_string))
+
+class StealingScoringSystem(DifficultyScoringSystem):
+	def __init__(self, hangman, output_funct):
+		super(StealingScoringSystem, self).__init__(hangman, output_funct)
+		
+		self.difficulty_points_hit = [1, 2, 3, 4, 5, 6]
+		self.difficulty_points_miss = [-1, -2, -3, -4, -5, -6]
+		self.difficulty_points_win = [0, 0, 0, 0, 0, 0]
+		self.difficulty_points_loss = [0, 0, 0, 0, 0, 0]
+		self.difficulty_points_win_steal = [10, 20, 30, 40, 50, 60]
+		self.points_win_steal = 10
+		
+		self.command_system.add_command("steal", self.steal, "Take what is rightfully yours", requires_user=True, has_args=True)
+		
+	def create_user(self, name):
+		user = {"score": 0,
+		        "name": name,
+		        "wins": [0, 0, 0, 0, 0, 0],
+		        "loses": [0, 0, 0, 0, 0, 0],
+		        "credit": 0}
+		return user
+		
+	def score_win_game(self, user):
+		super(StealingScoringSystem, self).score_win_game(user)
+		self.users[user.id]["credit"] += self.points_win_steal
+		
+	def set_difficulty(self, new_difficulty):
+		super(StealingScoringSystem, self).set_difficulty(new_difficulty)
+		self.points_win_steal = self.difficulty_points_win_steal[self.difficulty]
+		
+	def steal(self, user, target_username)
+		target_user = None
+		for u in self.users:
+			if u["name"] == target_username:
+				target_user = u
+		
+		if target_user == None:
+			self.say("Who the hell is " + str(target_username) + " ?")
+			return
+			
+		self.target_user["score"] -= self.users[user.id]["credit"]
+		self.users[user.id]["credit"] = 0
+	
+	def say_system(self):
+		super(StealingScoringSystem, self).say_system()
+		message = "\n"
+		message += "Winning lets you steal " + str(self.points_win_steal) + " from a victim of your choosing!"
+		self.say(message)
+		
+	def say_stats(self, user):
+		super(StealingScoringSystem, self).say_stats()
+		message = "\nStealing points:"
+		message += "\t" + self.users[user.id]["credit"]
+		self.say(message)
+		

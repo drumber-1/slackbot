@@ -26,7 +26,7 @@ class CommandBot(basicbot.BasicBot):
 
 		if "user" in message:
 			if message["user"] not in self.users:
-				print("(commandbot) {user} not recognised)".format(user=message["user"]["name"]))
+				print("(commandbot) {user} not recognised)".format(user=message["user"]))
 				return
 			user = self.users[message["user"]]
 
