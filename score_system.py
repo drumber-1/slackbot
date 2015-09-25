@@ -233,7 +233,8 @@ class StealingScoringSystem(DifficultyScoringSystem):
                 "name": name,
                 "wins": [0, 0, 0, 0, 0, 0],
                 "loses": [0, 0, 0, 0, 0, 0],
-                "credit": 0}
+                "credit": 0,
+                "stolenpoints": 0}
         return user
 
     def score_win_game(self, user):
@@ -246,9 +247,12 @@ class StealingScoringSystem(DifficultyScoringSystem):
         self.points_win_steal = self.difficulty_points_win_steal[self.difficulty]
 
     def steal(self, slack_user, args):
-
         if self.users[slack_user.id]["credit"] == 0:
             self.say(utils.randomelement(self.invalid_steal_responses).format(user=slack_user.name))
+            return
+
+        if len(args) == 0:
+            self.say("You must name your target")
             return
 
         target_username = args[0].lower()
@@ -272,6 +276,7 @@ class StealingScoringSystem(DifficultyScoringSystem):
             return
 
         target_user["score"] -= self.users[slack_user.id]["credit"]
+        target_user["stolenpoints"] += self.users[slack_user.id]["credit"]
         self.users[slack_user.id]["score"] += self.users[slack_user.id]["credit"]
         self.users[slack_user.id]["credit"] = 0
 
@@ -286,5 +291,13 @@ class StealingScoringSystem(DifficultyScoringSystem):
 
     def say_stats(self, slack_user):
         super(StealingScoringSystem, self).say_stats(slack_user)
-        message = "\nStealing points:\t" + str(self.users[slack_user.id]["credit"])
+        message = "\nStolen points:\t" + str(self.users[slack_user.id]["stolenpoints"])
+        self.say(message)
+
+    def say_score(self):
+        super(StealingScoringSystem, self).say_score()
+        message = "\n"
+        for u in self.users.values():
+            if u["credit"] > 0:
+                message += str(u["name"]) + " has " + str(u["credit"]) + " points to steal\n"
         self.say(message)
