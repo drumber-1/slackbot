@@ -133,18 +133,18 @@ class DifficultyScoringSystem(BasicScoreSystem):
             message += str(self.n_guesses()) + " guesses)\n"
         self.say(message)
 
-    def say_stats(self, user):
-        if user.id not in self.users:
+    def say_stats(self, slack_user):
+        if slack_user.id not in self.users:
             self.say("You have no stats! Play some games first!")
             return
-        message = "Stats for " + user.name + ":\n"
+        message = "Stats for " + slack_user.name + ":\n"
 
-        message += "\nScore:\t" + str(self.users[user.id]["score"])
+        message += "\nScore:\t" + str(self.users[slack_user.id]["score"])
 
         message += "\nWins / Loses:\n"
         for i in range(0, self.difficulty_max + 1):
-            wins = self.users[user.id]["wins"][i]
-            loses = self.users[user.id]["loses"][i]
+            wins = self.users[slack_user.id]["wins"][i]
+            loses = self.users[slack_user.id]["loses"][i]
             if wins == 0:
                 message += "\tDifficulty " + str(i)
             else:
@@ -241,7 +241,7 @@ class StealingScoringSystem(DifficultyScoringSystem):
         super(StealingScoringSystem, self).set_difficulty(new_difficulty)
         self.points_win_steal = self.difficulty_points_win_steal[self.difficulty]
 
-    def steal(self, user, target_username):
+    def steal(self, slack_user, target_username):
         target_user = None
         for u in self.users:
             if u["name"] == target_username:
@@ -251,8 +251,8 @@ class StealingScoringSystem(DifficultyScoringSystem):
             self.say("Who the hell is " + str(target_username) + " ?")
             return
 
-        self.target_user["score"] -= self.users[user.id]["credit"]
-        self.users[user.id]["credit"] = 0
+        self.target_user["score"] -= self.users[slack_user.id]["credit"]
+        self.users[slack_user.id]["credit"] = 0
 
     def say_system(self):
         super(StealingScoringSystem, self).say_system()
@@ -260,7 +260,7 @@ class StealingScoringSystem(DifficultyScoringSystem):
         message += "Winning lets you steal " + str(self.points_win_steal) + " from a victim of your choosing!"
         self.say(message)
 
-    def say_stats(self, user):
-        super(StealingScoringSystem, self).say_stats(user)
-        message = "\nStealing points:\t" + str(self.users[user.id]["credit"])
+    def say_stats(self, slack_user):
+        super(StealingScoringSystem, self).say_stats(slack_user)
+        message = "\nStealing points:\t" + str(self.users[slack_user.id]["credit"])
         self.say(message)
