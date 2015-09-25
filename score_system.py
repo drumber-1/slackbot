@@ -56,28 +56,38 @@ class BasicScoreSystem(object):
 
     def say_system(self):
         message = "Current scoring system:\n"
-        message += "\tCorrect letter: " + str(self.points_hit) + "\n"
-        message += "\tIncorrect letter: " + str(self.points_miss) + "\n"
-        message += "\tGame win: " + str(self.points_win) + "\n"
-        message += "\tGame loss: " + str(self.points_loss) + "\n"
+        if self.points_hit != 0:
+            message += "\tCorrect letter: " + str(self.points_hit) + "\n"
+        if self.points_miss != 0:
+            message += "\tIncorrect letter: " + str(self.points_miss) + "\n"
+        if self.points_win != 0:
+            message += "\tGame win: " + str(self.points_win) + "\n"
+        if self.points_loss != 0:
+            message += "\tGame loss: " + str(self.points_loss) + "\n"
         self.say(message)
 
-    def save_game(self, fname):
-        fout = open(fname, 'w')
-
+    def save_to_state(self):
         save_state = {}
         save_state["users"] = self.users
-        json.dump(save_state, fout)
+        return save_state
 
-    def load_game(self, fname):
+    def load_from_state(self, save_state):
+        self.users = save_state["users"]
+        for k in self.users.keys():
+            self.update_user(self.users[k])
+
+    def save_to_file(self, fname):
+        fout = open(fname, 'w')
+        json.dump(self.save_to_state(), fout)
+
+    def load_from_file(self, fname):
         if not os.path.isfile(fname):
             return
 
         fin = open(fname, 'r')
         save_state = json.load(fin)
-        self.users = save_state["users"]
-        for k in self.users.keys():
-            self.update_user(self.users[k])
+        self.load_from_state(save_state)
+
 
 
 class DifficultyScoringSystem(BasicScoreSystem):
@@ -129,8 +139,7 @@ class DifficultyScoringSystem(BasicScoreSystem):
             return
         message = "Stats for " + user.name + ":\n"
 
-        message += "\nScore:\n"
-        message += "\t" + self.users[user.id]["score"]
+        message += "\nScore:\t" + str(self.users[user.id]["score"])
 
         message += "\nWins / Loses:\n"
         for i in range(0, self.difficulty_max + 1):
@@ -192,25 +201,14 @@ class DifficultyScoringSystem(BasicScoreSystem):
         message += "Higher difficulties give (and take away) more points!\n"
         self.say(message)
 
-    def save_game(self, fname):
-        fout = open(fname, 'w')
-
-        save_state = {}
-        save_state["users"] = self.users
+    def save_to_state(self):
+        save_state = super(DifficultyScoringSystem, self).save_to_state()
         save_state["difficulty"] = self.difficulty
-        json.dump(save_state, fout)
+        return save_state
 
-    def load_game(self, fname):
-        if not os.path.isfile(fname):
-            return
-
-        fin = open(fname, 'r')
-        save_state = json.load(fin)
-        self.users = save_state["users"]
+    def load_from_state(self, save_state):
+        super(DifficultyScoringSystem, self).load_from_state(save_state)
         self.set_difficulty(int(save_state["difficulty"]))
-
-        for k in self.users.keys():
-            self.update_user(self.users[k])
 
 
 class StealingScoringSystem(DifficultyScoringSystem):
@@ -249,7 +247,7 @@ class StealingScoringSystem(DifficultyScoringSystem):
             if u["name"] == target_username:
                 target_user = u
 
-        if target_user == None:
+        if target_user is None:
             self.say("Who the hell is " + str(target_username) + " ?")
             return
 
@@ -263,7 +261,6 @@ class StealingScoringSystem(DifficultyScoringSystem):
         self.say(message)
 
     def say_stats(self, user):
-        super(StealingScoringSystem, self).say_stats()
-        message = "\nStealing points:"
-        message += "\t" + self.users[user.id]["credit"]
+        super(StealingScoringSystem, self).say_stats(user)
+        message = "\nStealing points:\t" + str(self.users[user.id]["credit"])
         self.say(message)

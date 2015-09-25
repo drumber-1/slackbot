@@ -24,8 +24,9 @@ class HangmanBot(commandbot.CommandBot):
         self.command_system.add_command("show", self.display, "Show current game state")
 
         # self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush)
-        self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush)
-        self.score_system.load_game(scorefile)
+        # self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush)
+        self.score_system = score_system.StealingScoringSystem(self.hm, self.saypush)
+        self.score_system.load_from_file(scorefile)
         self.command_system.sub_command_system = self.score_system.command_system
 
     def display(self):
@@ -106,4 +107,4 @@ class HangmanBot(commandbot.CommandBot):
             self.score_system.score_win_game(user)
         elif self.hm.game_state == "lose":
             self.score_system.score_lose_game(user)
-        self.score_system.save_game(scorefile)
+        self.score_system.save_to_file(scorefile)
