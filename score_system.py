@@ -2,7 +2,7 @@ import os
 import json
 
 import command_system
-
+import utils
 
 class BasicScoreSystem(object):
     def __init__(self, hangman, output_funct):
@@ -106,6 +106,8 @@ class DifficultyScoringSystem(BasicScoreSystem):
         self.loss_streak = 0
         self.wins_per_inc = 2
         self.loses_per_dec = 1
+
+        self.steal_responses = utils.read_responses("hangman_strings/steal")
 
         self.command_system.add_command("difficulty", self.say_difficulty_message, "Show current difficulty")
         self.command_system.add_command("stats", self.say_stats, "Show your stats", requires_user=True)
@@ -236,23 +238,29 @@ class StealingScoringSystem(DifficultyScoringSystem):
     def score_win_game(self, user):
         super(StealingScoringSystem, self).score_win_game(user)
         self.users[user.id]["credit"] += self.points_win_steal
+        self.say("Oh great winner, who do want the mighty hangmanbot to punish?")
 
     def set_difficulty(self, new_difficulty):
         super(StealingScoringSystem, self).set_difficulty(new_difficulty)
         self.points_win_steal = self.difficulty_points_win_steal[self.difficulty]
 
-    def steal(self, slack_user, target_username):
+    def steal(self, slack_user, args):
+        target_username = args[0]
         target_user = None
-        for u in self.users:
+        for u in self.users.values():
             if u["name"] == target_username:
                 target_user = u
 
         if target_user is None:
-            self.say("Who the hell is " + str(target_username) + " ?")
+            self.say("Who the hell is \"" + str(target_username) + "\"?")
             return
 
-        self.target_user["score"] -= self.users[slack_user.id]["credit"]
+        target_user["score"] -= self.users[slack_user.id]["credit"]
+        self.users[slack_user.id]["score"] += self.users[slack_user.id]["credit"]
         self.users[slack_user.id]["credit"] = 0
+
+        self.say(utils.randomelement(self.steal_responses).format(user=target_user["name"]))
+        self.say_score()
 
     def say_system(self):
         super(StealingScoringSystem, self).say_system()
