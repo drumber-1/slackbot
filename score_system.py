@@ -107,8 +107,6 @@ class DifficultyScoringSystem(BasicScoreSystem):
         self.wins_per_inc = 2
         self.loses_per_dec = 1
 
-        self.steal_responses = utils.read_responses("hangman_strings/steal")
-
         self.command_system.add_command("difficulty", self.say_difficulty_message, "Show current difficulty")
         self.command_system.add_command("stats", self.say_stats, "Show your stats", requires_user=True)
 
@@ -224,6 +222,9 @@ class StealingScoringSystem(DifficultyScoringSystem):
         self.difficulty_points_win_steal = [10, 20, 30, 40, 50, 60]
         self.points_win_steal = 10
 
+        self.steal_responses = utils.read_responses("hangman_strings/steal")
+        self.invalid_steal_responses = utils.read_responses("hangman_strings/invalidsteal")
+
         self.command_system.add_command("steal", self.steal, "Take what is rightfully yours", requires_user=True,
                                         has_args=True)
 
@@ -245,7 +246,22 @@ class StealingScoringSystem(DifficultyScoringSystem):
         self.points_win_steal = self.difficulty_points_win_steal[self.difficulty]
 
     def steal(self, slack_user, args):
-        target_username = args[0]
+
+        if self.users[slack_user.id]["credit"] == 0:
+            self.say(utils.randomelement(self.invalid_steal_responses).format(user=slack_user.name))
+            return
+
+        target_username = args[0].lower()
+
+        if target_username == "hangmanbot":
+            self.say("Nice try")
+            return
+
+        if target_username == slack_user.name:
+            self.say("You steal from yourself. You gain nothing. You idiot.")
+            self.users[slack_user.id]["credit"] = 0
+            return
+
         target_user = None
         for u in self.users.values():
             if u["name"] == target_username:
