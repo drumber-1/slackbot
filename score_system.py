@@ -242,8 +242,8 @@ class StealingScoringSystem(DifficultyScoringSystem):
         return user
 
     def score_win_game(self, slack_user):
-        super(StealingScoringSystem, self).score_win_game(slack_user)
         self.users[slack_user.id]["credit"] += self.points_win_steal
+        super(StealingScoringSystem, self).score_win_game(slack_user)
         message = "{user} may now say \"hm: steal <victim>\", to take {points} points from them!"
         self.say(message.format(user=slack_user.name, points=self.users[slack_user.id]["credit"]))
 
