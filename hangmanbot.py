@@ -27,6 +27,7 @@ class HangmanBot(commandbot.CommandBot):
         # self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush)
         self.score_system = score_system.StealingScoringSystem(self.hm, self.saypush)
         self.score_system.load_from_file(scorefile)
+        self.update_score_system_users()
         self.command_system.sub_command_system = self.score_system.command_system
 
     def display(self):
@@ -108,3 +109,10 @@ class HangmanBot(commandbot.CommandBot):
         elif self.hm.game_state == "lose":
             self.score_system.score_lose_game(user)
         self.score_system.save_to_file(scorefile)
+
+    def update_score_system_users(self):
+        for u in self.channel_users.values():
+            if not u.id in self.score_system.users:
+                if u.name == "hangmanbot" or u.name == "slackbot":
+                    continue
+                self.score_system.add_user(u.id, u.name)

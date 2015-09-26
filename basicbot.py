@@ -19,6 +19,7 @@ class BasicBot(object):
 
         self.channel = channel
         self.users = self.get_users()
+        self.channel_users = self.get_channel_users()
         self.message = ""
         self.pp = pprint.PrettyPrinter(indent=4)
 
@@ -56,6 +57,15 @@ class BasicBot(object):
         users_dict = {}
         for u in users:  # There is probably a more pythonic way of doing this
             users_dict[u.id] = u
+        return users_dict
+
+    def get_channel_users(self):
+        channel_users = self.sc.server.channels.find(self.channel).members
+        users = self.sc.server.users
+        users_dict = {}
+        for u in users:
+            if u.id in channel_users:
+                users_dict[u.id] = u
         return users_dict
 
     def process_event(self, event):

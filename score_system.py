@@ -25,6 +25,10 @@ class BasicScoreSystem(object):
             self.users[user_id] = self.create_user(user.name)
         self.users[user_id]["score"] += points
 
+    def add_user(self, id, name):
+        if not id in self.users:
+            self.users[id] = self.create_user(name)
+
     def create_user(self, name):
         user = {"score": 0, "name": name}
         return user
@@ -51,7 +55,7 @@ class BasicScoreSystem(object):
         message = "Current scores:\n"
         for k in self.users.keys():
             message += "\t" + str(self.users[k]["name"]) + ": " + str(self.users[k]["score"]) + "\n"
-        message += "\tEVERYONE ELSE: ZERO\n"
+        # message += "\tEVERYONE ELSE: ZERO\n"
         self.say(message)
 
     def say_system(self):
@@ -135,7 +139,7 @@ class DifficultyScoringSystem(BasicScoreSystem):
 
     def say_stats(self, slack_user):
         if slack_user.id not in self.users:
-            self.say("You have no stats! Play some games first!")
+            self.say("Who are you? Play some games first!")
             return
         message = "Stats for " + slack_user.name + ":\n"
 
@@ -237,16 +241,21 @@ class StealingScoringSystem(DifficultyScoringSystem):
                 "stolenpoints": 0}
         return user
 
-    def score_win_game(self, user):
-        super(StealingScoringSystem, self).score_win_game(user)
-        self.users[user.id]["credit"] += self.points_win_steal
-        self.say("Oh great winner, who do want the mighty hangmanbot to punish?")
+    def score_win_game(self, slack_user):
+        super(StealingScoringSystem, self).score_win_game(slack_user)
+        self.users[slack_user.id]["credit"] += self.points_win_steal
+        message = "{user} may now say \"hm: steal <victim>\", to take {points} points from them!"
+        self.say(message.format(user=slack_user.name, points=self.users[slack_user.id]["credit"]))
 
     def set_difficulty(self, new_difficulty):
         super(StealingScoringSystem, self).set_difficulty(new_difficulty)
         self.points_win_steal = self.difficulty_points_win_steal[self.difficulty]
 
     def steal(self, slack_user, args):
+        if slack_user.id not in self.users:
+            self.say("Who are you? Play some games first!")
+            return
+
         if self.users[slack_user.id]["credit"] == 0:
             self.say(utils.randomelement(self.invalid_steal_responses).format(user=slack_user.name))
             return
