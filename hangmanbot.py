@@ -113,6 +113,6 @@ class HangmanBot(commandbot.CommandBot):
     def update_score_system_users(self):
         for u in self.channel_users.values():
             if not u.id in self.score_system.users:
-                if u.name == "hangmanbot" or u.name == "slackbot":
+                if u.name == "hangmanbot" or u.name == "slackbot" or u.name == "jake":
                     continue
                 self.score_system.add_user(u.id, u.name)
