@@ -3,7 +3,7 @@ import sys
 import basicbot
 import command_system
 
-
+    
 class CommandBot(basicbot.BasicBot):
     def __init__(self, api_key, channel, short_name, description=""):
         super(CommandBot, self).__init__(api_key, channel)
@@ -27,15 +27,15 @@ class CommandBot(basicbot.BasicBot):
                 return
 
         if "user" in message:
-        	user_id = message["user"]
+            user_id = message["user"]
             if user_id not in self.users:
                 print("(commandbot) Adding user {user}".format(user=user_id))
                 updated_users = self.get_users()
                 if user_id not in updated_users:
-                	print("(commandbot) Can not find user {user}".format(user=user_id))
-                	return
+                    print("(commandbot) Can not find user {user}".format(user=user_id))
+                    return
                 else:
-                	self.users[user_id] = updated_users[user_id]
+                    self.users[user_id] = updated_users[user_id]
             
             user = self.users[user_id]
 

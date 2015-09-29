@@ -5,7 +5,7 @@ import command_system
 import utils
 
 class BasicScoreSystem(object):
-    def __init__(self, hangman, output_funct):
+    def __init__(self, hangman, output_funct, save_file):
         self.users = {}
         self.hm = hangman
         self.command_system = command_system.CommandSystem()
@@ -18,6 +18,8 @@ class BasicScoreSystem(object):
         
         self.leader_emoji = ":crown:"
         self.trailer_emoji = ":poop:"
+        
+        self.save_file = save_file
 
         self.command_system.add_command("score", self.say_score, "Show current scores")
         self.command_system.add_command("points", self.say_system, "Show scoring system")
@@ -29,6 +31,7 @@ class BasicScoreSystem(object):
     def add_user(self, id, name):
         if not id in self.users:
             self.users[id] = self.create_user(name)
+        self.save_to_file()
 
     def create_user(self, name):
         user = {"score": 0, "name": name}
@@ -58,9 +61,11 @@ class BasicScoreSystem(object):
 
     def score_win_game(self, user):
         self.give_points(user, self.points_win)
+        self.save_to_file()
 
     def score_lose_game(self, user):
         self.give_points(user, self.points_loss)
+        self.save_to_file()
 
     def say_score(self):
         message = "Current scores:\n"
@@ -98,23 +103,23 @@ class BasicScoreSystem(object):
         for k in self.users.keys():
             self.update_user(self.users[k])
 
-    def save_to_file(self, fname):
-        fout = open(fname, 'w')
+    def save_to_file(self):
+        fout = open(self.save_file, 'w')
         json.dump(self.save_to_state(), fout, indent=4)
 
-    def load_from_file(self, fname):
-        if not os.path.isfile(fname):
+    def load_from_file(self):
+        if not os.path.isfile(self.save_file):
             return
 
-        fin = open(fname, 'r')
+        fin = open(self.save_file, 'r')
         save_state = json.load(fin)
         self.load_from_state(save_state)
 
 
 
 class DifficultyScoringSystem(BasicScoreSystem):
-    def __init__(self, hangman, output_funct):
-        super(DifficultyScoringSystem, self).__init__(hangman, output_funct)
+    def __init__(self, hangman, output_funct, save_file):
+        super(DifficultyScoringSystem, self).__init__(hangman, output_funct, save_file)
 
         self.difficulty = 0
         self.difficulty_max = 5
@@ -234,8 +239,8 @@ class DifficultyScoringSystem(BasicScoreSystem):
 
 
 class StealingScoringSystem(DifficultyScoringSystem):
-    def __init__(self, hangman, output_funct):
-        super(StealingScoringSystem, self).__init__(hangman, output_funct)
+    def __init__(self, hangman, output_funct, save_file):
+        super(StealingScoringSystem, self).__init__(hangman, output_funct, save_file)
 
         self.difficulty_points_hit = [1, 2, 3, 4, 5, 6]
         self.difficulty_points_miss = [-1, -2, -3, -4, -5, -6]
@@ -324,6 +329,7 @@ class StealingScoringSystem(DifficultyScoringSystem):
 
         self.say(utils.randomelement(self.steal_responses).format(user=target_user["name"]))
         self.say_score()
+        self.save_to_file()
 
     def say_system(self):
         super(StealingScoringSystem, self).say_system()
@@ -337,10 +343,3 @@ class StealingScoringSystem(DifficultyScoringSystem):
         message = "\nStolen points:\t" + str(self.users[slack_user.id]["stolenpoints"])
         self.say(message)
 
-    def say_score(self):
-        super(StealingScoringSystem, self).say_score()
-        message = "\n"
-        for u in self.users.values():
-            if u["credit"] > 0:
-                message += str(u["name"]) + " has " + str(u["credit"]) + " points to steal\n"
-        self.say(message)

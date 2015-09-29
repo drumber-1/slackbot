@@ -3,9 +3,6 @@ import hangman
 import score_system
 import utils
 
-scorefile = "scores.json"
-
-
 class HangmanBot(commandbot.CommandBot):
     def __init__(self, api_key, channel):
         super(HangmanBot, self).__init__(api_key, channel, "hm", description="A bot for playing hangman!")
@@ -17,17 +14,16 @@ class HangmanBot(commandbot.CommandBot):
         self.miss = utils.read_responses("hangman_strings/miss")
         self.unknown = utils.read_responses("hangman_strings/unknown")
 
-        self.scorefile = "scores.json"
         self.swears = ["fuck", "shit", "cunt"]
 
         self.command_system.add_command("start", self.game_start, "Start a new game")
         self.command_system.add_command("show", self.display, "Show current game state")
         self.command_system.add_command("join", self.add_player, "Join in the fun!", requires_user=True)
 
-        # self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush)
-        # self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush)
-        self.score_system = score_system.StealingScoringSystem(self.hm, self.saypush)
-        self.score_system.load_from_file(scorefile)
+        # self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush, "scores.json")
+        # self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush, "scores.json")
+        self.score_system = score_system.StealingScoringSystem(self.hm, self.saypush, "scores.json")
+        self.score_system.load_from_file()
         self.command_system.sub_command_system = self.score_system.command_system
 
     def display(self):
@@ -56,8 +52,8 @@ class HangmanBot(commandbot.CommandBot):
     	if slack_user.id in self.score_system.users:
     		self.saypush("You are already playing stupid\n")
     		return
-    	self.score_system.add_user(u.id, u.name)
-    	self.saypush("Welcome {user}, type \"hm: start\" to start a game!\n")
+    	self.score_system.add_user(slack_user.id, slack_user.name)
+    	self.saypush("Welcome {user}, type \"hm: start\" to start a game!\n".format(user=slack_user.name))
     	
 
     def game_start(self):
@@ -117,7 +113,8 @@ class HangmanBot(commandbot.CommandBot):
         self.display()
         if self.hm.game_state == "win":
             self.score_system.score_win_game(user)
+            self.score_system.save_to_file()
         elif self.hm.game_state == "lose":
             self.score_system.score_lose_game(user)
-        self.score_system.save_to_file(scorefile)
+            self.score_system.save_to_file()
 
