@@ -34,8 +34,11 @@ class BasicScoreSystem(object):
         user = {"score": 0, "name": name}
         return user
         
+    def get_user_score_string(self, user_id):
+    	return str(self.users[user_id]["name"]) + ": " + str(self.users[user_id]["score"])
+        
     def effective_points(self, user_id):
-    	return self.users[u][user_id]
+    	return self.users[user_id]["score"]
         
     def sorted_user_ids(self):
     	sorted_ids = sorted(self.users.keys(), key=self.effective_points, reverse=True)
@@ -70,7 +73,7 @@ class BasicScoreSystem(object):
         		emoji = self.leader_emoji
             elif k is sorted_ids[-1]:
         		emoji = self.trailer_emoji
-            message += "\t" + emoji + " " + str(self.users[k]["name"]) + ": " + str(self.users[k]["score"]) + "\n"
+            message += "\t" + emoji + " " + self.get_user_score_string(k) + "\n"
         self.say(message)
 
     def say_system(self):
@@ -255,6 +258,12 @@ class StealingScoringSystem(DifficultyScoringSystem):
                 "credit": 0,
                 "stolenpoints": 0}
         return user
+        
+    def get_user_score_string(self, user_id):
+    	ret = super(StealingScoringSystem, self).get_user_score_string(user_id)
+    	if self.users[user_id]["credit"] != 0:
+    		ret += " (+" + str(self.users[user_id]["credit"]) + " to steal)"
+    	return ret
         
     def effective_points(self, user_id):
     	return self.users[user_id]["score"] + self.users[user_id]["credit"]
