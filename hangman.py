@@ -15,17 +15,38 @@ class Hangman(object):
         self.started = False
         self.difficulty = 0
         self.difficulty_current = 0  # Increasing the difficulty will only take place for the next game
-        # This is fudged for slacks text formatting
-        # which is not monospaced for multiple spaces
+        
         self.state_prefix = "+---+\n"
-        self.state_suffix = "|\n==========\n"
-        self.states = ["|       |\n|        \n|         \n|         \n",
-                       "|       |\n|       0\n|         \n|         \n",
-                       "|       |\n|       0\n|       | \n|         \n",
-                       "|       |\n|       0\n|     /|  \n|         \n",
-                       "|       |\n|       0\n|     /|\ \n|         \n",
-                       "|       |\n|       0\n|     /|\ \n|     /   \n",
-                       "|       |\n|       0\n|     /|\ \n|     / \ \n"]
+        self.state_suffix = "|         \n" + "==========\n"
+
+        self.states = ["|   |     \n" +
+                       "|         \n" + 
+                       "|         \n" +
+                       "|         \n",
+                       "|   |     \n" +
+                       "|   0     \n" +
+                       "|         \n" +
+                       "|         \n",
+                       "|   |     \n" +
+                       "|   0     \n" +
+                       "|   |     \n" +
+                       "|         \n",
+                       "|   |     \n" +
+                       "|   0     \n" +
+                       "|  /|     \n" +
+                       "|         \n",
+                       "|   |     \n" +
+                       "|   0     \n" +
+                       "|  /|\    \n" +
+                       "|         \n",
+                       "|   |     \n" +
+                       "|   0     \n" +
+                       "|  /|\    \n" +
+                       "|  /      \n",
+                       "|   |     \n" +
+                       "|   0     \n" +
+                       "|  /|\    \n" +
+                       "|  / \    \n"]
 
         self.generate_words(word_file)
 

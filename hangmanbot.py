@@ -31,7 +31,7 @@ class HangmanBot(commandbot.CommandBot):
             self.saypush("No game in progress, type \"hm: start\" to start one!")
             return
 
-        self.say(self.hm.get_state_string() + "\n")
+        self.say("```" + self.hm.get_state_string() + "```\n")
         self.say("Word: " + self.hm.get_word_string() + "\n")
         self.say("Letters missed: " + self.hm.letters_missed + "\n")
         self.say("Letters guessed: " + self.hm.letters_guessed + "\n")
