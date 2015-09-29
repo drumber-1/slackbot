@@ -27,10 +27,17 @@ class CommandBot(basicbot.BasicBot):
                 return
 
         if "user" in message:
-            if message["user"] not in self.users:
-                print("(commandbot) {user} not recognised)".format(user=message["user"]))
-                return
-            user = self.users[message["user"]]
+        	user_id = message["user"]
+            if user_id not in self.users:
+                print("(commandbot) Adding user {user}".format(user=user_id))
+                updated_users = self.get_users()
+                if user_id not in updated_users:
+                	print("(commandbot) Can not find user {user}".format(user=user_id))
+                	return
+                else:
+                	self.users[user_id] = updated_users[user_id]
+            
+            user = self.users[user_id]
 
             text = message["text"].lower()
             if not text.startswith(self.short_name + ":"):

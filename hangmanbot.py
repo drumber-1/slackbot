@@ -22,17 +22,17 @@ class HangmanBot(commandbot.CommandBot):
 
         self.command_system.add_command("start", self.game_start, "Start a new game")
         self.command_system.add_command("show", self.display, "Show current game state")
+        self.command_system.add_command("join", self.add_player, "Join in the fun!", requires_user=True)
 
         # self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush)
         # self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush)
         self.score_system = score_system.StealingScoringSystem(self.hm, self.saypush)
         self.score_system.load_from_file(scorefile)
-        self.update_score_system_users()
         self.command_system.sub_command_system = self.score_system.command_system
 
     def display(self):
         if self.hm.game_state == "ready":
-            self.saypush("No game in progress, say \"hm: start\" to start one!")
+            self.saypush("No game in progress, type \"hm: start\" to start one!")
             return
 
         self.say(self.hm.get_state_string() + "\n")
@@ -43,14 +43,22 @@ class HangmanBot(commandbot.CommandBot):
         if self.hm.game_state == "win":
             self.say("\n")
             self.say("Humans win!\n")
-            self.say("Say \"hm: start\" to start a new game!")
+            self.say("Type \"hm: start\" to start a new game!")
         elif self.hm.game_state == "lose":
             self.say("\n")
             self.say("Humans lose!\n")
             self.say("The word was " + self.hm.word + "\n")
-            self.say("Say \"hm: start\" to start a new game!")
+            self.say("Type \"hm: start\" to start a new game!")
 
         self.push()
+        
+    def add_player(self, slack_user):
+    	if slack_user.id in self.score_system.users:
+    		self.saypush("You are already playing stupid\n")
+    		return
+    	self.score_system.add_user(u.id, u.name)
+    	self.saypush("Welcome {user}, type \"hm: start\" to start a game!\n")
+    	
 
     def game_start(self):
         if self.hm.game_state == "started":
@@ -84,7 +92,7 @@ class HangmanBot(commandbot.CommandBot):
 
     def make_guess(self, user, letter):
         if not self.hm.game_state == "started":
-            self.saypush("No game in progress, say \"hm: start\" to start one!\n")
+            self.saypush("No game in progress, type \"hm: start\" to start one!\n")
             return
         ret = self.hm.guess(letter)
         if ret == "invalid":
@@ -110,9 +118,3 @@ class HangmanBot(commandbot.CommandBot):
             self.score_system.score_lose_game(user)
         self.score_system.save_to_file(scorefile)
 
-    def update_score_system_users(self):
-        for u in self.channel_users.values():
-            if not u.id in self.score_system.users:
-                if u.name == "hangmanbot" or u.name == "slackbot" or u.name == "jake":
-                    continue
-                self.score_system.add_user(u.id, u.name)

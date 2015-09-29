@@ -156,7 +156,7 @@ class DifficultyScoringSystem(BasicScoreSystem):
 
     def say_stats(self, slack_user):
         if slack_user.id not in self.users:
-            self.say("Who are you? Play some games first!")
+            self.say("Who are you? Type \"hm: join\" to join!")
             return
         message = "Stats for " + slack_user.name + ":\n"
 
@@ -279,7 +279,7 @@ class StealingScoringSystem(DifficultyScoringSystem):
 
     def steal(self, slack_user, args):
         if slack_user.id not in self.users:
-            self.say("Who are you? Play some games first!")
+            self.say("Who are you? Type \"hm: join\" to join!")
             return
 
         if self.users[slack_user.id]["credit"] == 0:
