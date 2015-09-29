@@ -168,15 +168,22 @@ class DifficultyScoringSystem(BasicScoreSystem):
 
         message += "\nScore:\t" + str(self.users[slack_user.id]["score"])
 
-        message += "\nWins / Loses:\n"
+        message += "\nWins / Loses:\n```"
+        template = "\t{diff:<20}: {wins:>3} / {loses:>3}\n"
+        total_wins = 0
+        total_loses = 0
         for i in range(0, self.difficulty_max + 1):
             wins = self.users[slack_user.id]["wins"][i]
             loses = self.users[slack_user.id]["loses"][i]
+            total_wins += wins
+            total_loses += loses
             if wins == 0:
-                message += "\tDifficulty " + str(i)
+                difficulty_name = "Difficulty " + str(i)
             else:
-                message += "\t" + str(self.difficulty_strings[i])
-            message += ": " + str(wins) + " / " + str(loses) + "\n"
+                difficulty_name = "" + str(self.difficulty_strings[i])
+            message += template.format(diff=difficulty_name, wins=wins, loses=loses)
+        message += template.format(diff="Total", wins=total_wins, loses=total_loses)
+        message += "```"
         self.say(message)
 
     def change_difficulty(self, dir):
