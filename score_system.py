@@ -24,8 +24,6 @@ class BasicScoreSystem(object):
 
     def give_points(self, user, points):
         user_id = user.id
-        if user_id not in self.users.keys():
-            self.users[user_id] = self.create_user(user.name)
         self.users[user_id]["score"] += points
 
     def add_user(self, id, name):

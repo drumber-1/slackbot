@@ -91,6 +91,9 @@ class HangmanBot(commandbot.CommandBot):
         return False
 
     def make_guess(self, user, letter):
+    	if user.id not in self.score_system.users:
+            self.say("Who are you? Type \"hm: join\" to join!")
+            return
         if not self.hm.game_state == "started":
             self.saypush("No game in progress, type \"hm: start\" to start one!\n")
             return
