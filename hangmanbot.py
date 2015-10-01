@@ -4,10 +4,9 @@ import score_system
 import utils
 
 class HangmanBot(commandbot.CommandBot):
-    def __init__(self, api_key, channel):
+    def __init__(self, api_key, channel, wordlist):
         super(HangmanBot, self).__init__(api_key, channel, "hm", description="A bot for playing hangman!")
-        self.hm = hangman.Hangman("./words.txt")
-        # self.hm = hangman.Hangman("/usr/share/dict/words")
+        self.hm = hangman.Hangman(wordlist)
 
         self.agress = utils.read_responses("hangman_strings/agress")
         self.hit = utils.read_responses("hangman_strings/hit")
