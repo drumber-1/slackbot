@@ -2,11 +2,15 @@ import commandbot
 import hangman
 import score_system
 import utils
+import letterswitcher
 
 class HangmanBot(commandbot.CommandBot):
-    def __init__(self, api_key, channel, dictionaries):
+    def __init__(self, api_key, channel, dictionaries, antibot=True):
         super(HangmanBot, self).__init__(api_key, channel, "hm", description="A bot for playing hangman!")
         self.hm = hangman.Hangman(dictionaries)
+        self.ls = letterswitcher.LetterSwitcher()
+        
+        self.antibot = antibot
 
         self.agress = utils.read_responses("hangman_strings/agress")
         self.hit = utils.read_responses("hangman_strings/hit")
@@ -32,9 +36,12 @@ class HangmanBot(commandbot.CommandBot):
             return
 
         self.say("```" + self.hm.get_state_string() + "```\n")
-        self.say("Word: " + self.hm.get_word_string() + "\n")
-        self.say("Letters missed: " + self.hm.letters_missed + "\n")
-        self.say("Letters guessed: " + self.hm.letters_guessed + "\n")
+        self.say("Word: ")
+        self.say_antibot(self.hm.get_word_string() + "\n")
+        self.say("Letters missed: ")
+        self.say_antibot(self.hm.letters_missed + "\n")
+        self.say("Letters guessed: ")
+        self.say_antibot(self.hm.letters_guessed + "\n")
 
         if self.hm.game_state == "win":
             self.say("\n")
@@ -47,6 +54,12 @@ class HangmanBot(commandbot.CommandBot):
             self.say("Type \"hm: start\" to start a new game!")
 
         self.push()
+        
+    def say_antibot(self, message):
+    	if self.antibot:
+    		self.say(self.ls.process_word(message))
+    	else:
+    		self.say(message)
         
     def show_dictionaries(self):
         self.say("Dictionaries in use:\n")
