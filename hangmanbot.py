@@ -4,9 +4,9 @@ import score_system
 import utils
 
 class HangmanBot(commandbot.CommandBot):
-    def __init__(self, api_key, channel, wordlist):
+    def __init__(self, api_key, channel, dictionaries):
         super(HangmanBot, self).__init__(api_key, channel, "hm", description="A bot for playing hangman!")
-        self.hm = hangman.Hangman(wordlist)
+        self.hm = hangman.Hangman(dictionaries)
 
         self.agress = utils.read_responses("hangman_strings/agress")
         self.hit = utils.read_responses("hangman_strings/hit")
@@ -18,6 +18,7 @@ class HangmanBot(commandbot.CommandBot):
         self.command_system.add_command("start", self.game_start, "Start a new game")
         self.command_system.add_command("show", self.display, "Show current game state")
         self.command_system.add_command("join", self.add_player, "Join in the fun!", requires_user=True)
+        self.command_system.add_command("dictionaries", self.show_dictionaries, "Show which dictionaries are in use")
 
         # self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush, "scores.json")
         # self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush, "scores.json")
@@ -47,20 +48,29 @@ class HangmanBot(commandbot.CommandBot):
 
         self.push()
         
+    def show_dictionaries(self):
+        self.say("Dictionaries in use:\n")
+        template = "{dictionary}\n\twords: {words}, weighting: {weighting}\n"
+        for d in self.hm.dictionaries:
+            self.say(template.format(dictionary=d.name, words=d.size(), weighting=d.weighting))
+        self.push()
+        
     def add_player(self, slack_user):
-    	if slack_user.id in self.score_system.users:
-    		self.saypush("You are already playing stupid\n")
-    		return
-    	self.score_system.add_user(slack_user.id, slack_user.name)
-    	self.saypush("Welcome {user}, type \"hm: start\" to start a game!\n".format(user=slack_user.name))
-    	
+        if slack_user.id in self.score_system.users:
+            self.saypush("You are already playing stupid\n")
+            return
+        self.score_system.add_user(slack_user.id, slack_user.name)
+        self.saypush("Welcome {user}, type \"hm: start\" to start a game!\n".format(user=slack_user.name))
+        
 
     def game_start(self):
         if self.hm.game_state == "started":
             self.saypush("A game has already been started you dingus\n")
         else:
-            self.hm.start()
+            dictionary = self.hm.start()
             self.say("Game started!\n")
+            template = "The word was selected from the {dictionary} ({words} words)\n"
+            self.say(template.format(dictionary=dictionary.name, words=dictionary.size()))
             self.display()
 
     def runoff_message(self, user, cmd, arguments, message):
@@ -86,7 +96,7 @@ class HangmanBot(commandbot.CommandBot):
         return False
 
     def make_guess(self, user, letter):
-    	if user.id not in self.score_system.users:
+        if user.id not in self.score_system.users:
             self.say("Who are you? Type \"hm: join\" to join!")
             return
         if not self.hm.game_state == "started":
