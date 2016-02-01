@@ -4,6 +4,7 @@ import json
 import command_system
 import utils
 
+
 class BasicScoreSystem(object):
     def __init__(self, hangman, output_funct, save_file):
         self.users = {}
@@ -15,10 +16,10 @@ class BasicScoreSystem(object):
         self.points_miss = -2
         self.points_win = 10
         self.points_loss = 0
-        
+
         self.leader_emoji = ":crown:"
         self.trailer_emoji = ":poop:"
-        
+
         self.save_file = save_file
 
         self.command_system.add_command("score", self.say_score, "Show current scores")
@@ -36,16 +37,16 @@ class BasicScoreSystem(object):
     def create_user(self, name):
         user = {"score": 0, "name": name}
         return user
-        
+
     def get_user_score_string(self, user_id):
-    	return str(self.users[user_id]["name"]) + ": " + str(self.users[user_id]["score"])
-        
+        return str(self.users[user_id]["name"]) + ": " + str(self.users[user_id]["score"])
+
     def effective_points(self, user_id):
-    	return self.users[user_id]["score"]
-        
+        return self.users[user_id]["score"]
+
     def sorted_user_ids(self):
-    	sorted_ids = sorted(self.users.keys(), key=self.effective_points, reverse=True)
-    	return sorted_ids
+        sorted_ids = sorted(self.users.keys(), key=self.effective_points, reverse=True)
+        return sorted_ids
 
     def update_user(self, user):  # If a user is from an old save, fills in missing fields with default values
         default_user = self.create_user("a name")
@@ -69,15 +70,15 @@ class BasicScoreSystem(object):
 
     def say_score(self):
         message = "Current scores:\n"
-        
+
         sorted_ids = self.sorted_user_ids()
-        
+
         for k in sorted_ids:
             emoji = ""
             if k is sorted_ids[0]:
-        		emoji = self.leader_emoji
+                emoji = self.leader_emoji
             elif k is sorted_ids[-1]:
-        		emoji = self.trailer_emoji
+                emoji = self.trailer_emoji
             message += "\t" + emoji + " " + self.get_user_score_string(k) + "\n"
         self.say(message)
 
@@ -114,7 +115,6 @@ class BasicScoreSystem(object):
         fin = open(self.save_file, 'r')
         save_state = json.load(fin)
         self.load_from_state(save_state)
-
 
 
 class DifficultyScoringSystem(BasicScoreSystem):
@@ -270,27 +270,27 @@ class StealingScoringSystem(DifficultyScoringSystem):
                 "credit": 0,
                 "stolenpoints": 0}
         return user
-        
+
     def get_user_score_string(self, user_id):
-    	ret = super(StealingScoringSystem, self).get_user_score_string(user_id)
-    	if self.users[user_id]["credit"] != 0:
-    		ret += " (+" + str(self.users[user_id]["credit"]) + " to steal)"
-    	return ret
-        
+        ret = super(StealingScoringSystem, self).get_user_score_string(user_id)
+        if self.users[user_id]["credit"] != 0:
+            ret += " (+" + str(self.users[user_id]["credit"]) + " to steal)"
+        return ret
+
     def effective_points(self, user_id):
-    	return self.users[user_id]["score"] + self.users[user_id]["credit"]
+        return self.users[user_id]["score"] + self.users[user_id]["credit"]
 
     def score_win_game(self, slack_user):
         potential_credit = self.points_win_steal
         super(StealingScoringSystem, self).score_win_game(slack_user)
         if slack_user.id == self.sorted_user_ids()[0]:
-        	self.users[slack_user.id]["score"] += potential_credit
-        	message = "{user} gets {points} points for winning!"
-        	self.say(message.format(user=slack_user.name, points=potential_credit))
+            self.users[slack_user.id]["score"] += potential_credit
+            message = "{user} gets {points} points for winning!"
+            self.say(message.format(user=slack_user.name, points=potential_credit))
         else:
-        	self.users[slack_user.id]["credit"] += potential_credit
-        	message = "{user} may now say \"hm: steal <victim>\", to take {credit} points from them!"
-        	self.say(message.format(user=slack_user.name, credit=self.users[slack_user.id]["credit"]))
+            self.users[slack_user.id]["credit"] += potential_credit
+            message = "{user} may now say \"hm: steal <victim>\", to take {credit} points from them!"
+            self.say(message.format(user=slack_user.name, credit=self.users[slack_user.id]["credit"]))
 
     def set_difficulty(self, new_difficulty):
         super(StealingScoringSystem, self).set_difficulty(new_difficulty)
@@ -349,4 +349,3 @@ class StealingScoringSystem(DifficultyScoringSystem):
         super(StealingScoringSystem, self).say_stats(slack_user)
         message = "\nStolen points:\t" + str(self.users[slack_user.id]["stolenpoints"])
         self.say(message)
-

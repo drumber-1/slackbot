@@ -4,8 +4,10 @@ import pprint
 import slackclient
 import websocket
 
+
 class BotError(Exception):
     pass
+
 
 class BasicBot(object):
     def __init__(self, api_key, channel):
@@ -47,12 +49,12 @@ class BasicBot(object):
             time.sleep(1)
 
     def update(self):
-    	events = []
-    	try:
-        	events = self.sc.rtm_read()
+        events = []
+        try:
+            events = self.sc.rtm_read()
         except websocket.WebSocketException as ex:
-        	print("(bot) websocket err: ")
-        	print(ex)
+            print("(bot) websocket err: ")
+            print(ex)
         for e in events:
             self.process_event(e)
 

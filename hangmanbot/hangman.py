@@ -54,7 +54,7 @@ class Hangman(object):
     def start(self):
         dictionary = self.random_dictionary()
         self.word = dictionary.get_random_word()
-        print("(hangman) " + self.word)
+        print("(hangmanbot) " + self.word)
         self.letters_missed = ""
         self.letters_guessed = ""
         self.started = True
@@ -80,10 +80,10 @@ class Hangman(object):
 
     def set_difficulty(self, new_difficulty):
         if new_difficulty < 0:
-            print("(hangman) Cannot set difficulty to " + str(new_difficulty) + " (min 0)")
+            print("(hangmanbot) Cannot set difficulty to " + str(new_difficulty) + " (min 0)")
             return
         if new_difficulty > (len(self.states) - 1):
-            print("(hangman) Cannot set difficulty to " + str(new_difficulty) + " (max " + str(
+            print("(hangmanbot) Cannot set difficulty to " + str(new_difficulty) + " (max " + str(
                 len(self.states) - 1) + ")")
             return
         self.difficulty = new_difficulty
@@ -119,6 +119,6 @@ class Hangman(object):
             if x <= running_weighting:
                 return d
         
-        print "(hangman) An error has occured choosing a dictionary!"
+        print("(hangmanbot) An error has occured choosing a dictionary!")
         raise Exception
 

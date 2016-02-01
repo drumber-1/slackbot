@@ -6,12 +6,12 @@
 # FORTRAN using Emacs with an interactive search for newline-2012-tab,
 # that is typed C-s C-q C-j 2 0 1 2 C-i).
 
-import os
 import pickle
 import random
 import zlib
 from operator import attrgetter
-from .data import Data
+
+from adventurebot.adventure.data import Data
 from .model import Room, Message, Dwarf, Pirate
 
 YESNO_ANSWERS = {'y': True, 'yes': True, 'n': False, 'no': False}

@@ -1,13 +1,13 @@
 import commandbot
-import hangman
-import score_system
+import hangmanbot.hangman as hm
 import utils
-import letterswitcher
+from hangmanbot import letterswitcher, score_system
+
 
 class HangmanBot(commandbot.CommandBot):
     def __init__(self, api_key, channel, dictionaries, antibot=True):
-        super(HangmanBot, self).__init__(api_key, channel, "hm", description="A bot for playing hangman!")
-        self.hm = hangman.Hangman(dictionaries)
+        super(HangmanBot, self).__init__(api_key, channel, "hm", description="A bot for playing hangmanbot!")
+        self.hm = hm.Hangman(dictionaries)
         self.ls = letterswitcher.LetterSwitcher()
         
         self.antibot = antibot

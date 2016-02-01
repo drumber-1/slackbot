@@ -1,6 +1,8 @@
 from unittest import TestCase
-from adventure import load_advent_dat
-from adventure.game import Game
+
+from adventurebot.adventure import load_advent_dat
+from adventurebot.adventure import Game
+
 
 class CommandTest(TestCase):
 

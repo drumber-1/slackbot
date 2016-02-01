@@ -3,8 +3,8 @@ import unittest
 class DataTest(unittest.TestCase):
 
     def setUp(self):
-        from adventure.data import Data
-        from adventure import load_advent_dat
+        from adventurebot.adventure.data import Data
+        from adventurebot.adventure import load_advent_dat
         self.data = Data()
         load_advent_dat(self.data)
 
@@ -42,8 +42,8 @@ LOOKING ELSEWHERE FOR THE KEYS.
 class ReprTest(unittest.TestCase):
 
     def setUp(self):
-        from adventure.data import Data
-        from adventure import load_advent_dat
+        from adventurebot.adventure.data import Data
+        from adventurebot.adventure import load_advent_dat
         self.data = Data()
         load_advent_dat(self.data)
 

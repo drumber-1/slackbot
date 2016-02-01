@@ -1,8 +1,11 @@
 """The Adventure game."""
+from adventurebot.adventure import data
+from adventurebot.adventure import game
+
 
 def load_advent_dat(data):
     import os
-    from .data import parse
+    from adventurebot.adventure.data import parse
 
     datapath = os.path.join(os.path.dirname(__file__), 'advent.dat')
     with open(datapath, 'r') as datafile:
@@ -17,8 +20,8 @@ def play(seed=None):
     """
     global _game
 
-    from .game import Game
-    from .prompt import install_words
+    from adventurebot.adventure.game import Game
+    from adventurebot.adventure.prompt import install_words
 
     _game = Game(seed)
     load_advent_dat(_game)
@@ -29,8 +32,8 @@ def play(seed=None):
 def resume(savefile, quiet=False):
     global _game
 
-    from .game import Game
-    from .prompt import install_words
+    from adventurebot.adventure.game import Game
+    from adventurebot.adventure.prompt import install_words
 
     _game = Game.resume(savefile)
     install_words(_game)

@@ -5,8 +5,9 @@ import os
 import re
 from sys import executable, stdout
 from time import sleep
+
 from . import load_advent_dat
-from .game import Game
+from adventurebot.adventure.game import Game
 
 BAUD = 1200
 

@@ -1,7 +1,9 @@
 """Parse the original PDP ``advent.dat`` file."""
 
 from operator import attrgetter
-from .model import Hint, Message, Move, Object, Room, Word
+
+from adventurebot.adventure.model import Hint, Message, Move, Object, Room, Word
+
 
 # The Adventure data file knows only the first five characters of each
 # word in the game, so we have to know the full verion of each word.
