@@ -9,13 +9,13 @@ class HangmanBot(commandbot.CommandBot):
         super(HangmanBot, self).__init__(api_key, channel, "hm", description="A bot for playing hangmanbot!")
         self.hm = hm.Hangman(dictionaries)
         self.ls = letterswitcher.LetterSwitcher()
-        
+
         self.antibot = antibot
 
-        self.agress = utils.read_responses("hangman_strings/agress")
-        self.hit = utils.read_responses("hangman_strings/hit")
-        self.miss = utils.read_responses("hangman_strings/miss")
-        self.unknown = utils.read_responses("hangman_strings/unknown")
+        self.agress = utils.read_responses("hangmanbot/hangman_strings/agress")
+        self.hit = utils.read_responses("hangmanbot/hangman_strings/hit")
+        self.miss = utils.read_responses("hangmanbot/hangman_strings/miss")
+        self.unknown = utils.read_responses("hangmanbot/hangman_strings/unknown")
 
         self.swears = ["fuck", "shit", "cunt"]
 
@@ -54,27 +54,26 @@ class HangmanBot(commandbot.CommandBot):
             self.say("Type \"hm: start\" to start a new game!")
 
         self.push()
-        
+
     def say_antibot(self, message):
-    	if self.antibot:
-    		self.say(self.ls.process_word(message))
-    	else:
-    		self.say(message)
-        
+        if self.antibot:
+            self.say(self.ls.process_word(message))
+        else:
+            self.say(message)
+
     def show_dictionaries(self):
         self.say("Dictionaries in use:\n")
         template = "{dictionary}\n\twords: {words}, weighting: {weighting}\n"
         for d in self.hm.dictionaries:
             self.say(template.format(dictionary=d.name, words=d.size(), weighting=d.weighting))
         self.push()
-        
+
     def add_player(self, slack_user):
         if slack_user.id in self.score_system.users:
             self.saypush("You are already playing stupid\n")
             return
         self.score_system.add_user(slack_user.id, slack_user.name)
         self.saypush("Welcome {user}, type \"hm: start\" to start a game!\n".format(user=slack_user.name))
-        
 
     def game_start(self):
         if self.hm.game_state == "started":
@@ -139,4 +138,3 @@ class HangmanBot(commandbot.CommandBot):
         elif self.hm.game_state == "lose":
             self.score_system.score_lose_game(user)
             self.score_system.save_to_file()
-

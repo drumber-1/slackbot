@@ -256,8 +256,8 @@ class StealingScoringSystem(DifficultyScoringSystem):
         self.difficulty_points_win_steal = [10, 20, 30, 40, 50, 60]
         self.points_win_steal = 10
 
-        self.steal_responses = utils.read_responses("hangman_strings/steal")
-        self.invalid_steal_responses = utils.read_responses("hangman_strings/invalidsteal")
+        self.steal_responses = utils.read_responses("hangmanbot/hangman_strings/steal")
+        self.invalid_steal_responses = utils.read_responses("hangmanbot/hangman_strings/invalidsteal")
 
         self.command_system.add_command("steal", self.steal, "Take what is rightfully yours", requires_user=True,
                                         has_args=True)
