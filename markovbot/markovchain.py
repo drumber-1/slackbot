@@ -1,11 +1,12 @@
 import utils
 
 class MarkovChain(object):
-    def __init__(self, word_grouping=3):
+    def __init__(self, word_grouping=3, min_sentence_length=3):
         self.chain = {}
         self.parsed_words = 0
         self.parsed_messages = 0
         self.word_grouping = word_grouping
+        self.min_sentence_length = min_sentence_length
 
         self.start_index = "START"
         self.end_index = "END"
@@ -27,6 +28,8 @@ class MarkovChain(object):
 
     def add_message(self, message):
         words = message.split()
+        if len(words) < self.min_sentence_length:
+            return
         self.parsed_messages += 1
         self.parsed_words += len(words)
         print("messages: " + str(self.parsed_messages))
