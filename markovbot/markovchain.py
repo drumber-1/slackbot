@@ -1,7 +1,7 @@
 import utils
 
 class MarkovChain(object):
-    def __init__(self, word_grouping=3, min_sentence_length=3):
+    def __init__(self, word_grouping=2, min_sentence_length=5):
         self.chain = {}
         self.parsed_words = 0
         self.parsed_messages = 0
@@ -46,7 +46,6 @@ class MarkovChain(object):
             self.add_to_chain(key, value)
 
     def add_to_chain(self, key, value):
-        print(str(key) + " --- " + str(value))
         if key in self.chain:
             self.chain[key].append(value)
         else:
