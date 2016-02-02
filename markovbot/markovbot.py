@@ -22,6 +22,14 @@ class MarkovBot(basicbot.BasicBot):
                 print("Reply to not None, is: " + message["reply_to"])
 
         self.mc.add_message(message["text"])
-        self.saypush(self.mc.generate_text())
+        if self.should_speak():
+            print("Parsed messages : " + str(self.mc.parsed_messages))
+            print(self.mc.generate_text())
+
+    def should_speak(self):
+        if self.mc.parsed_messages % 10 == 0:
+            return True
+        else:
+            return False
 
 

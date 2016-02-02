@@ -32,8 +32,6 @@ class MarkovChain(object):
             return
         self.parsed_messages += 1
         self.parsed_words += len(words)
-        print("messages: " + str(self.parsed_messages))
-        print("words: " + str(self.parsed_words))
 
         groups = self.get_groups(words)
         first = True
