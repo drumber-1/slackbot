@@ -21,6 +21,8 @@ class BasicBot(object):
         self.channel = channel
         self.users = self.get_users()
         self.channel_users = self.get_channel_users()
+        self.id = self.sc.server.login_data["self"]["id"]
+        
         self.message = ""
         self.pp = pprint.PrettyPrinter(indent=4)
 
@@ -64,6 +66,13 @@ class BasicBot(object):
         for u in users:  # There is probably a more pythonic way of doing this
             users_dict[u.id] = u
         return users_dict
+    
+    def get_channels(self):
+    	channels = self.sc.server.channels
+    	channel_dict = {}
+    	for c in channels:  # There is probably a more pythonic way of doing this
+            channel_dict[c.id] = c
+        return channel_dict
 
     def get_channel_users(self):
         channel_users = self.sc.server.channels.find(self.channel).members
