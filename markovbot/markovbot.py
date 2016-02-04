@@ -29,6 +29,8 @@ class MarkovBot(basicbot.BasicBot):
     def process_message(self, message):
         if "subtype" in message:
             return
+        if messages["channel"][0] == "D":
+        	return # Skip private messages
         if "reply_to" in message:
             if message["reply_to"] is None:
                     return
@@ -43,13 +45,11 @@ class MarkovBot(basicbot.BasicBot):
             
         self.messages_since_speak += 1
         
-        print(message["text"])
         if self.should_speak(message["text"]):
             self.speak()
             
     def speak(self):
-        print("Parsed messages : " + str(self.mc_2.parsed_messages))
-        print(self.mc_2.generate_text().encode('utf-8'))
+        self.saypush(self.mc_2.generate_text())
         self.messages_since_speak = 0
 
     def should_speak(self, text):
