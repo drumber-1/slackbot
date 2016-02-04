@@ -1,11 +1,22 @@
 import basicbot
-import markovbot.markovchain as mchain
+import markovchain as mchain
+import os
 
 class MarkovBot(basicbot.BasicBot):
     def __init__(self, api_key, channel):
         super(MarkovBot, self).__init__(api_key, channel)
-
-        self.mc = mchain.MarkovChain()
+        
+        self.savefile_2 = "markovbot/chain_2.dat"
+        self.savefile_3 = "markovbot/chain_3.dat"
+        
+        self.mc_2 = mchain.MarkovChain(word_grouping=2)
+        self.mc_3 = mchain.MarkovChain(word_grouping=3)
+        
+        if os.path.isfile(self.savefile_2):
+        	self.mc_2.load(self.savefile_2)
+        	
+        if os.path.isfile(self.savefile_3):
+        	self.mc_3.load(self.savefile_3)
 
     def process_event(self, event):
         if "type" in event:  # Errors / message confirmation don't have type
@@ -21,13 +32,20 @@ class MarkovBot(basicbot.BasicBot):
             else:
                 print("Reply to not None, is: " + message["reply_to"])
 
-        self.mc.add_message(message["text"])
+        if self.mc_2.add_message(message["text"]):
+        	self.mc_2.save(self.savefile_2)
+        	
+        if self.mc_3.add_message(message["text"]):
+        	self.mc_3.save(self.savefile_3)
+        	
         if self.should_speak():
-            print("Parsed messages : " + str(self.mc.parsed_messages))
-            print(self.mc.generate_text())
+            print("Parsed messages : " + str(self.mc_2.parsed_messages))
+            print("2 word grouping: " + self.mc_2.generate_text().encode('utf-8'))
+            print("3 word grouping: " + self.mc_3.generate_text().encode('utf-8'))
+            
 
     def should_speak(self):
-        if self.mc.parsed_messages % 10 == 0:
+        if self.mc_2.parsed_messages % 10 == 0:
             return True
         else:
             return False
