@@ -29,7 +29,9 @@ class MarkovBot(basicbot.BasicBot):
     def process_message(self, message):
         if "subtype" in message:
             return
-        if messages["channel"][0] == "D":
+        if message["channel"][0] == "D":
+        	print("(markovbot) Got private message from " + self.get_users()[message["user"]].name + ":")
+        	print("\t" + message["text"])
         	return # Skip private messages
         if "reply_to" in message:
             if message["reply_to"] is None:
