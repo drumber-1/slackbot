@@ -78,7 +78,7 @@ class BasicBot(object):
                 print("(bot) connected to {team} as {name}".format(team=self.sc.server.domain, name=self.sc.server.username))
             else:
                 print("(bot) reconnection failed")
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             print("(bot) URLError: {}".format(e.args))
 
     def get_users(self):
