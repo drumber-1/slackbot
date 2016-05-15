@@ -70,7 +70,7 @@ class MarkovBot(basicbot.BasicBot):
             self.speak(message)
             
     def speak(self, message):
-    	text = self.mc_2.generate_text()
+        text = self.mc_2.generate_text()
         self.saypush(text)
         
         self.message_log.write("Responding to:\n")
