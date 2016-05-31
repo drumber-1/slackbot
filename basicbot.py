@@ -80,6 +80,8 @@ class BasicBot(object):
                 print("(bot) reconnection failed")
         except urllib2.URLError as e:
             print("(bot) URLError: {}".format(e.args))
+        except slackclient._server.SlackConnectionError:
+	    print("(bot) SlackConnectionError")
 
     def get_users(self):
         users = self.sc.server.users
