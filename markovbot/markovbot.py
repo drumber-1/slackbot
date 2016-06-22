@@ -1,5 +1,5 @@
 import basicbot
-import markovbot.markovchain as mchain
+import markovchain as mchain
 
 class MarkovBot(basicbot.BasicBot):
     def __init__(self, api_key, channel):

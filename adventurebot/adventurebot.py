@@ -1,7 +1,7 @@
 import os
 
 import basicbot
-from adventurebot import adventure
+import adventure
 import utils
 
 class AdventureBot(basicbot.BasicBot):

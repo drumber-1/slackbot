@@ -1,11 +1,11 @@
 import commandbot
-import hangmanbot.hangman as hm
+import hangman as hm
 import utils
-from hangmanbot import letterswitcher, score_system
-
+import letterswitcher
+import score_system
 
 class HangmanBot(commandbot.CommandBot):
-    def __init__(self, api_key, channel, dictionaries, antibot=True):
+    def __init__(self, api_key, channel, dictionaries, antibot=True, scoring=None):
         super(HangmanBot, self).__init__(api_key, channel, "hm", description="A bot for playing hangmanbot!")
         self.hm = hm.Hangman(dictionaries)
         self.ls = letterswitcher.LetterSwitcher()
@@ -24,9 +24,13 @@ class HangmanBot(commandbot.CommandBot):
         self.command_system.add_command("join", self.add_player, "Join in the fun!", requires_user=True)
         self.command_system.add_command("dictionaries", self.show_dictionaries, "Show which dictionaries are in use")
 
-        # self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush, "scores.json")
-        # self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush, "scores.json")
-        self.score_system = score_system.StealingScoringSystem(self.hm, self.saypush, "scores.json")
+        if scoring == "diff":
+            self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush, "scores.json")
+        elif scoring == "steal":
+            self.score_system = score_system.StealingScoringSystem(self.hm, self.saypush, "scores.json")
+        else:
+            self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush, "scores.json")
+
         self.score_system.load_from_file()
         self.command_system.sub_command_system = self.score_system.command_system
 

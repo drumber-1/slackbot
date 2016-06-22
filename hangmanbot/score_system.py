@@ -346,6 +346,9 @@ class StealingScoringSystem(DifficultyScoringSystem):
         self.say(message)
 
     def say_stats(self, slack_user):
+        if slack_user.id not in self.users:
+            self.say("Who are you? Type \"hm: join\" to join!")
+            return
         super(StealingScoringSystem, self).say_stats(slack_user)
         message = "\nStolen points:\t" + str(self.users[slack_user.id]["stolenpoints"])
         self.say(message)

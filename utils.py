@@ -1,6 +1,5 @@
 import random
 
-
 def randomelement(elements):
     return elements[random.randint(0, len(elements) - 1)]
 
