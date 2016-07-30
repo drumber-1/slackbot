@@ -8,25 +8,24 @@ import markovchain as mchain
 
 
 class MarkovBot(basicbot.BasicBot):
-    def __init__(self, api_key, channel):
+    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True):
         super(MarkovBot, self).__init__(api_key, channel)
 
-        self.savefile_2 = "markovbot/chain_2.dat"
-        self.savefile_3 = "markovbot/chain_3.dat"
-        self.message_log = open("markovbot/message.log", "w")
+        self.savefile = "markovbot/chain.dat"
+        if logfile is not None:
+            self.message_log = open(logfile, "w")
+        else:
+            self.message_log = None
 
         self.messages_since_speak = 0
+        self.unprompted = unprompted
 
-        self.mc_2 = mchain.MarkovChain(word_grouping=2)
-        self.mc_3 = mchain.MarkovChain(word_grouping=3)
+        self.mc = mchain.MarkovChain(word_grouping=grouping)
 
         self.re_mention = re.compile("<[@!].+>")
 
-        if os.path.isfile(self.savefile_2):
-            self.mc_2.load(self.savefile_2)
-
-        if os.path.isfile(self.savefile_3):
-            self.mc_3.load(self.savefile_3)
+        if os.path.isfile(self.savefile):
+            self.mc.load(self.savefile)
 
     def process_event(self, event):
         if "type" in event:  # Errors / message confirmation don't have type
@@ -60,11 +59,8 @@ class MarkovBot(basicbot.BasicBot):
             print ("(markovbot) message, \"" + message["text"].encode("utf-8") + "\",contains mention ignoring")
             return
 
-        if self.mc_2.add_message(message["text"]):
-            self.mc_2.save(self.savefile_2)
-
-        if self.mc_3.add_message(message["text"]):
-            self.mc_3.save(self.savefile_3)
+        if self.mc.add_message(message["text"]):
+            self.mc.save(self.savefile)
 
         self.messages_since_speak += 1
 
@@ -72,20 +68,21 @@ class MarkovBot(basicbot.BasicBot):
             self.speak(message)
 
     def speak(self, message):
-        text = self.mc_2.generate_text()
+        text = self.mc.generate_text()
         self.saypush(text)
 
-        self.message_log.write("Responding to:\n")
-        pprint.pprint(message, self.message_log)
-        self.message_log.write("With:\n")
-        self.message_log.write(text.encode("utf-8"))
-        self.message_log.write("\n\n********************\n")
-        self.message_log.flush()
+        if self.message_log is not None:
+            self.message_log.write("Responding to:\n")
+            pprint.pprint(message, self.message_log)
+            self.message_log.write("With:\n")
+            self.message_log.write(text.encode("utf-8"))
+            self.message_log.write("\n\n********************\n")
+            self.message_log.flush()
 
         self.messages_since_speak = 0
 
     def should_speak(self):
-        if self.messages_since_speak > 20 and random.randint(0, 50) == 0:
+        if self.unprompted and self.messages_since_speak > 20 and random.randint(0, 50) == 0:
             return True
         else:
             return False

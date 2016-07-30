@@ -5,7 +5,7 @@ import letterswitcher
 import score_system
 
 class HangmanBot(commandbot.CommandBot):
-    def __init__(self, api_key, channel, dictionaries, antibot=True, scoring=None):
+    def __init__(self, api_key, channel, dictionaries, antibot=False, scoring="basic"):
         super(HangmanBot, self).__init__(api_key, channel, "hm", description="A bot for playing hangmanbot!")
         self.hm = hm.Hangman(dictionaries)
         self.ls = letterswitcher.LetterSwitcher()
@@ -28,7 +28,10 @@ class HangmanBot(commandbot.CommandBot):
             self.score_system = score_system.DifficultyScoringSystem(self.hm, self.saypush, "scores.json")
         elif scoring == "steal":
             self.score_system = score_system.StealingScoringSystem(self.hm, self.saypush, "scores.json")
+        elif scoring == "basic":
+            self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush, "scores.json")
         else:
+            print("(HangmanBot) Unknown scoring system \"{}\", reverting to basic scoring")
             self.score_system = score_system.BasicScoreSystem(self.hm, self.saypush, "scores.json")
 
         self.score_system.load_from_file()
