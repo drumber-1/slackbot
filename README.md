@@ -6,6 +6,9 @@ A collection of generally entertaining slackbots, written in python using slack'
 * python 2.7
 * slack-client (https://github.com/slackhq/python-slackclient)
 
+###Optional
+* Tweepy (http://www.tweepy.org/) (Optional for MarkovBot)
+
 ###Quick start
 
 Make a bot user for your slack team (https://api.slack.com/bot-users), then fire up your favourite python2.7 interpreter:
@@ -25,7 +28,7 @@ See ```main_example.py``` for minimum working examples for each bot. The basic f
 Generates messages based on a probabilistic model of previous messages. Any time markovbot is mentioned he will respond with a randomly generated message. All other messages in the channel will be used to train the markov chain. Markovbot will ignore messages that are less than 4 words, more than 25 words or contain a mention of another user. Allow around 20-30 input messages before the output becomes interesting. I accept no responsibility for anything markovbot says.
 
 
-```markovbot.MarkovBot(api_key, channel, grouping=2, logfile=None, unprompted=True)```
+```markovbot.MarkovBot(api_key, channel, grouping=2, logfile=None, unprompted=True, twitter_api=None)```
 
 | Argument | Description |
 |:-------- |:----------- |
@@ -34,6 +37,7 @@ Generates messages based on a probabilistic model of previous messages. Any time
 | ```grouping``` | How many words are considered when generating the next word. High values give better messages but require a lot more training to get original messages. 2 generally is a good value/ |
 | ```logfile``` | If not ```None```, a log will be kept in ```logfile``` of what the bot is saying and who it is responding to. |
 | ```unprompted``` | If ```True``` will generate messages randomly without being asked (about every 70 messages from other users) |
+| ```twitter_api``` | If this is an instance of a tweepy api object (see http://docs.tweepy.org/en/v3.5.0/auth_tutorial.html) any pinned markovbot message will be tweeted for safe keeping |
 
 
 ####HangmanBot

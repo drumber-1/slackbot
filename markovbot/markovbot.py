@@ -8,8 +8,10 @@ import markovchain as mchain
 
 
 class MarkovBot(basicbot.BasicBot):
-    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True):
+    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True, twitter_api=None):
         super(MarkovBot, self).__init__(api_key, channel)
+
+        self.twitter_api = twitter_api
 
         self.savefile = "markovbot/chain.dat"
         if logfile is not None:
@@ -31,6 +33,11 @@ class MarkovBot(basicbot.BasicBot):
         if "type" in event:  # Errors / message confirmation don't have type
             if event["type"] == "message":
                 self.process_message(event)
+            elif event["type"] == "pin_added" and self.twitter_api is not None:
+                if event["item_user"] == self.id:
+                    time_delay = float(event["event_ts"]) - float(event["item"]["message"]["ts"])
+                    if time_delay < 300:
+                        self.send_tweet(event["item"]["message"]["text"])
 
     def process_message(self, message):
         if "subtype" in message:
@@ -86,3 +93,12 @@ class MarkovBot(basicbot.BasicBot):
             return True
         else:
             return False
+
+    def send_tweet(self, text):
+        import tweepy
+        try:
+            self.twitter_api.update_status(text)
+            print("(MarkovBot) Tweeted \"{}\"".format(text))
+        except tweepy.error.TweepError:  # tweepy raises an exception if status is duplicate
+            print("(MarkovBot) Could not tweet \"{}\", probably duplicate".format(text))
+
