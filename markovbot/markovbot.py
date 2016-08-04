@@ -36,7 +36,7 @@ class MarkovBot(basicbot.BasicBot):
             elif event["type"] == "pin_added" and self.twitter_api is not None:
                 if event["item_user"] == self.id:
                     time_delay = float(event["event_ts"]) - float(event["item"]["message"]["ts"])
-                    if time_delay < 300:
+                    if time_delay < 900:
                         self.send_tweet(event["item"]["message"]["text"])
 
     def process_message(self, message):
