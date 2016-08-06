@@ -98,7 +98,7 @@ class MarkovBot(basicbot.BasicBot):
         import tweepy
         try:
             self.twitter_api.update_status(text)
-            print("(MarkovBot) Tweeted \"{}\"".format(text))
+            print("(MarkovBot) Tweeted \"{}\"".format(text.encode('utf-8')))
         except tweepy.error.TweepError:  # tweepy raises an exception if status is duplicate
-            print("(MarkovBot) Could not tweet \"{}\", probably duplicate".format(text))
+            print("(MarkovBot) Could not tweet \"{}\", probably duplicate".format(text.encode('utf-8')))
 
