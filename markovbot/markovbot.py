@@ -8,10 +8,13 @@ import markovchain as mchain
 
 
 class MarkovBot(basicbot.BasicBot):
-    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True, twitter_api=None):
+    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True, twitter_api=None, twitter_delay=900, tweet_triggers=["heart"]):
         super(MarkovBot, self).__init__(api_key, channel)
 
         self.twitter_api = twitter_api
+        self.twitter_delay = twitter_delay
+        self.tweet_triggers = tweet_triggers
+        self.recent_messages = {}
 
         self.savefile = "markovbot/chain.dat"
         if logfile is not None:
@@ -29,15 +32,29 @@ class MarkovBot(basicbot.BasicBot):
         if os.path.isfile(self.savefile):
             self.mc.load(self.savefile)
 
+    def add_recent_message(self, new_message):
+        self.recent_messages = {ts: self.recent_messages[ts] for ts in self.recent_messages if float(new_message["ts"]) - float(ts) < self.twitter_delay}
+        self.recent_messages[new_message["ts"]] = new_message["text"]
+
     def process_event(self, event):
         if "type" in event:  # Errors / message confirmation don't have type
             if event["type"] == "message":
                 self.process_message(event)
-            elif event["type"] == "pin_added" and self.twitter_api is not None:
-                if event["item_user"] == self.id:
-                    time_delay = float(event["event_ts"]) - float(event["item"]["message"]["ts"])
-                    if time_delay < 900:
-                        self.send_tweet(event["item"]["message"]["text"])
+            elif event["type"] == "reaction_added":
+                self.process_reaction(event)
+        elif "text" in event and "reply_to" in event and "ts" in event:  # message confirmation
+            self.add_recent_message(event)
+
+    def process_reaction(self, reaction):
+        if reaction["reaction"] not in self.tweet_triggers:
+            return
+        message_ts = reaction["item"]["ts"]
+        if message_ts in self.recent_messages:
+            time_delay = float(reaction["event_ts"]) - float(message_ts)
+            if time_delay < self.twitter_delay:
+                message_text = self.recent_messages[message_ts]
+                self.send_tweet(message_text)
+                self.recent_messages.pop(message_ts)
 
     def process_message(self, message):
         if "subtype" in message:
@@ -95,10 +112,13 @@ class MarkovBot(basicbot.BasicBot):
             return False
 
     def send_tweet(self, text):
-        import tweepy
-        try:
-            self.twitter_api.update_status(text)
-            print("(MarkovBot) Tweeted \"{}\"".format(text.encode('utf-8')))
-        except tweepy.error.TweepError:  # tweepy raises an exception if status is duplicate
-            print("(MarkovBot) Could not tweet \"{}\", probably duplicate".format(text.encode('utf-8')))
+        if self.twitter_api is not None:
+            import tweepy
+            try:
+                self.twitter_api.update_status(text)
+                print("(MarkovBot) Tweeted \"{}\"".format(text.encode('utf-8')))
+            except tweepy.error.TweepError:  # tweepy raises an exception if status is duplicate
+                print("(MarkovBot) Could not tweet \"{}\", probably duplicate".format(text.encode('utf-8')))
+        else:
+            print("(MarkovBot) Would of liked to tweet \"{}\"".format(text.encode('utf-8')))
 
