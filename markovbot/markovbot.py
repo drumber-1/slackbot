@@ -8,7 +8,7 @@ import markovchain as mchain
 
 
 class MarkovBot(basicbot.BasicBot):
-    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True, twitter_api=None, twitter_delay=900, tweet_triggers=["heart"]):
+    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True, twitter_api=None, twitter_delay=900, tweet_triggers=["heart", "+1"]):
         super(MarkovBot, self).__init__(api_key, channel)
 
         self.twitter_api = twitter_api
