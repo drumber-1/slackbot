@@ -48,6 +48,9 @@ class MarkovBot(basicbot.BasicBot):
     def process_reaction(self, reaction):
         if reaction["reaction"] not in self.tweet_triggers:
             return
+        if "ts" not in reaction["item"]:
+	    print("Reaction has no timestamp")
+            return
         message_ts = reaction["item"]["ts"]
         if message_ts in self.recent_messages:
             time_delay = float(reaction["event_ts"]) - float(message_ts)
@@ -67,7 +70,7 @@ class MarkovBot(basicbot.BasicBot):
             if message["reply_to"] is None:
                 return
             else:
-                print("Reply to not None, is: " + message["reply_to"])
+                print("Reply to not None, is: " + str(message["reply_to"]))
         if message["user"] == "USLACKBOT":  # Ignore slackbot
             return
 
@@ -117,8 +120,9 @@ class MarkovBot(basicbot.BasicBot):
             try:
                 self.twitter_api.update_status(text)
                 print("(MarkovBot) Tweeted \"{}\"".format(text.encode('utf-8')))
-            except tweepy.error.TweepError:  # tweepy raises an exception if status is duplicate
-                print("(MarkovBot) Could not tweet \"{}\", probably duplicate".format(text.encode('utf-8')))
+            except tweepy.error.TweepError as e:  # tweepy raises an exception if status is duplicate
+                print("(MarkovBot) Could not tweet \"{}\"".format(text.encode('utf-8')))
+                print("(MarkovBot) Error message: \"{}\", code: {}".format(e.message[0]['message'].encode('utf-8'), e.message[0]['code']))
         else:
             print("(MarkovBot) Would of liked to tweet \"{}\"".format(text.encode('utf-8')))
 
