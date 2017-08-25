@@ -1,4 +1,6 @@
 import random
+import requests
+
 
 def randomelement(elements):
     return elements[random.randint(0, len(elements) - 1)]
@@ -25,3 +27,9 @@ def correct_case(input_string):
             if c is "." or c is "?" or c is "!":
                 capitalise = True
     return output_string
+
+
+def get_url_response(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.json()

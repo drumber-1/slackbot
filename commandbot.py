@@ -2,7 +2,8 @@ import sys
 
 import basicbot
 import command_system
-    
+
+
 class CommandBot(basicbot.BasicBot):
     def __init__(self, api_key, channel, short_name, description=""):
         super(CommandBot, self).__init__(api_key, channel)
