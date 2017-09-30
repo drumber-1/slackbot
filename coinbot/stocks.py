@@ -12,7 +12,8 @@ class Account(object):
         self.name = name
         self.cash = starting_cash
         self.bitcoin = 0
-        self.load(data)
+        if not data == None:
+            self.load(data)
 
     def load(self, data):
         self.name = data["name"]
@@ -104,4 +105,5 @@ class Stocks(object):
 
     def account_summary_string(self, id):
         return "{} : ${} (${} + {} btc)".format(self.accounts[id].name, self.account_worth(id), self.accounts[id].cash, self.accounts[id].bitcoin)
+
 
