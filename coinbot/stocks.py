@@ -61,7 +61,7 @@ class Stocks(object):
 
     def sell(self, id, btc_value):
         if id not in self.accounts:
-            return Transaction(0, 0, StockReturnCodes.NoAccountError)
+            return Transaction(0, 0, 0, StockReturnCodes.NoAccountError)
         account = self.accounts[id]
         transaction_fee_btc = btc_value * self.transaction_fee_fraction
         if btc_value > account.bitcoin:
