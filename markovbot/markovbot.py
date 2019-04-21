@@ -102,7 +102,7 @@ class MarkovBot(basicbot.BasicBot):
             self.message_log.write("Responding to:\n")
             pprint.pprint(message, self.message_log)
             self.message_log.write("With:\n")
-            self.message_log.write(text.encode("utf-8"))
+            self.message_log.write(str(text.encode("utf-8")))
             self.message_log.write("\n\n********************\n")
             self.message_log.flush()
 
