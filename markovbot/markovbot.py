@@ -49,7 +49,7 @@ class MarkovBot(basicbot.BasicBot):
         if reaction["reaction"] not in self.tweet_triggers:
             return
         if "ts" not in reaction["item"]:
-	    print("Reaction has no timestamp")
+        print("Reaction has no timestamp")
             return
         message_ts = reaction["item"]["ts"]
         if message_ts in self.recent_messages:

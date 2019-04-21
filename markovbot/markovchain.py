@@ -47,8 +47,8 @@ class MarkovChain(object):
             self.chain[key] = [value]
 
     def generate_text(self, max_length=25):
-    	if self.start_index not in self.chain:
-    		return ""
+        if self.start_index not in self.chain:
+            return ""
         generated_text = []
 
         test_group = random.choice(self.chain[self.start_index])
@@ -74,26 +74,26 @@ class MarkovChain(object):
         return ' '.join(generated_text)
         
     def get_join_freq(self):
-    	freq = {}
-    	for k in self.chain.keys():
-    		njoins = len(self.chain[k])
-    		if njoins in freq:
-    			freq[njoins] += 1
-    		else:
-    			freq[njoins] = 1
-    	return freq
-    	
+        freq = {}
+        for k in self.chain.keys():
+            njoins = len(self.chain[k])
+            if njoins in freq:
+                freq[njoins] += 1
+            else:
+                freq[njoins] = 1
+        return freq
+        
     def print_freq(self):
-    	freq = self.get_join_freq()
-    	print "njoins", "freq"
-    	for njoins in freq.keys():
-    		print njoins, freq[njoins]
+        freq = self.get_join_freq()
+        print("njoins\tfreq")
+        for njoins in freq.keys():
+            print("{}\t{}".format(njoins, freq[njoins]))
         
     def save(self, filename):
-    	f = open(filename, 'wb')
-    	pickle.dump(self.chain, f, 2)
-    	f.close()
-    	
+        f = open(filename, 'wb')
+        pickle.dump(self.chain, f, 2)
+        f.close()
+        
     def load(self, filename):
-    	f = open(filename, 'rb')
-    	self.chain = pickle.load(f)
+        f = open(filename, 'rb')
+        self.chain = pickle.load(f)
