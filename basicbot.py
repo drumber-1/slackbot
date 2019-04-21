@@ -4,7 +4,7 @@ import pprint
 import slackclient
 import websocket
 import socket
-import urllib2
+import urllib.error
 
 class BotError(Exception):
     pass
@@ -78,10 +78,10 @@ class BasicBot(object):
                 print("(bot) connected to {team} as {name}".format(team=self.sc.server.domain, name=self.sc.server.username))
             else:
                 print("(bot) reconnection failed")
-        except urllib2.URLError as e:
+        except urllib.error.URLError as e:
             print("(bot) URLError: {}".format(e.args))
         except slackclient._server.SlackConnectionError:
-	    print("(bot) SlackConnectionError")
+            print("(bot) SlackConnectionError")
 
     def get_users(self):
         users = self.sc.server.users

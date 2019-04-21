@@ -3,7 +3,7 @@
 A collection of generally entertaining slackbots, written in python using slack's python-slackclient.
 
 ###Requirements
-* python 2.7
+* python 3
 * slack-client (https://github.com/slackhq/python-slackclient)
 
 ###Optional

@@ -1,2 +1,2 @@
-from markovbot import MarkovBot
+from markovbot import *
 
