@@ -20,8 +20,7 @@ class ReactionData:
         self.total_messages += 1
         reaction_chance = self.total_reactions / max(self.total_messages, self.message_floor)
         reaction_roll = random.random()
-        print("Rolled {} vs target {}".format(reaction_roll, reaction_chance))
-        should_react = random.random() < reaction_chance
+        should_react = reaction_roll < reaction_chance
         if should_react:
             reaction_roll = random.randint(0, self.total_reactions + 1)
             cumulative = 0
