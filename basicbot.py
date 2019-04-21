@@ -38,11 +38,11 @@ class BasicBot(object):
         nlines = len(self.message.split("\n"))
         if nlines > 1:
             message_abv += " ... [" + str(nlines - 1) + " additional lines]"
-        print("(bot) pushing message: " + message_abv.encode('utf-8'))
+        print("(bot) pushing message: " + str(message_abv.encode('utf-8')))
         try:
-        	self.sc.rtm_send_message(self.channel, self.message)
+            self.sc.rtm_send_message(self.channel, self.message)
         except AttributeError:
-        	import pdb; pdb.set_trace() # To catch potential bug after reconnect
+            import pdb; pdb.set_trace() # To catch potential bug after reconnect
 
         self.message = ""
 
