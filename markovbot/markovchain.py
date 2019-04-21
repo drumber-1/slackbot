@@ -91,9 +91,10 @@ class MarkovChain(object):
         
     def save(self, filename):
         f = open(filename, 'wb')
-        pickle.dump(self.chain, f, 2)
+        pickle.dump(self.chain, f, pickle.HIGHEST_PROTOCOL)
         f.close()
         
     def load(self, filename):
         f = open(filename, 'rb')
         self.chain = pickle.load(f)
+        f.close()

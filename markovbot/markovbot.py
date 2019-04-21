@@ -5,10 +5,11 @@ import pprint
 
 import basicbot
 import markovbot.markovchain as mchain
+import markovbot.reactiondata
 
 
 class MarkovBot(basicbot.BasicBot):
-    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True, twitter_api=None, twitter_delay=900, tweet_triggers=["heart", "+1"]):
+    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True, reactions=False, twitter_api=None, twitter_delay=900, tweet_triggers=["heart", "+1"]):
         super(MarkovBot, self).__init__(api_key, channel)
 
         self.twitter_api = twitter_api
@@ -16,7 +17,13 @@ class MarkovBot(basicbot.BasicBot):
         self.tweet_triggers = tweet_triggers
         self.recent_messages = {}
 
-        self.savefile = "markovbot/chain.dat"
+        if reactions:
+            self.reaction_data = markovbot.reactiondata.ReactionData()
+        else:
+            self.reaction_data = None
+
+        self.mc_savefile = "markovbot/chain.dat"
+        self.reaction_savefile = "markovbot/reactions.dat"
         if logfile is not None:
             self.message_log = open(logfile, "w")
         else:
@@ -29,8 +36,11 @@ class MarkovBot(basicbot.BasicBot):
 
         self.re_mention = re.compile("<[@!].+>")
 
-        if os.path.isfile(self.savefile):
-            self.mc.load(self.savefile)
+        if os.path.isfile(self.mc_savefile):
+            self.mc.load(self.mc_savefile)
+
+        if self.reaction_data is not None and os.path.isfile(self.reaction_savefile):
+            self.reaction_data.load(self.reaction_savefile)
 
     def add_recent_message(self, new_message):
         self.recent_messages = {ts: self.recent_messages[ts] for ts in self.recent_messages if float(new_message["ts"]) - float(ts) < self.twitter_delay}
@@ -46,18 +56,23 @@ class MarkovBot(basicbot.BasicBot):
             self.add_recent_message(event)
 
     def process_reaction(self, reaction):
-        if reaction["reaction"] not in self.tweet_triggers:
+        if reaction["user"] == self.id:
             return
-        if "ts" not in reaction["item"]:
-            print("Reaction has no timestamp")
-            return
-        message_ts = reaction["item"]["ts"]
-        if message_ts in self.recent_messages:
-            time_delay = float(reaction["event_ts"]) - float(message_ts)
-            if time_delay < self.twitter_delay:
-                message_text = self.recent_messages[message_ts]
-                self.send_tweet(message_text)
-                self.recent_messages.pop(message_ts)
+
+        if self.reaction_data is not None:
+            self.reaction_data.on_reaction(reaction["reaction"])
+
+        if reaction["reaction"] in self.tweet_triggers:
+            if "ts" not in reaction["item"]:
+                print("Reaction has no timestamp")
+                return
+            message_ts = reaction["item"]["ts"]
+            if message_ts in self.recent_messages:
+                time_delay = float(reaction["event_ts"]) - float(message_ts)
+                if time_delay < self.twitter_delay:
+                    message_text = self.recent_messages[message_ts]
+                    self.send_tweet(message_text)
+                    self.recent_messages.pop(message_ts)
 
     def process_message(self, message):
         if "subtype" in message:
@@ -83,11 +98,17 @@ class MarkovBot(basicbot.BasicBot):
 
         m = self.re_mention.search(message["text"])
         if m is not None:
-            print ("(markovbot) message, \"" + message["text"].encode("utf-8") + "\",contains mention ignoring")
+            print("(markovbot) message, \"" + message["text"].encode("utf-8") + "\",contains mention ignoring")
             return
 
+        if self.reaction_data is not None:
+            reaction = self.reaction_data.on_message()
+            if reaction is not None:
+                self.add_reaction(reaction, self.channel_id, message["ts"])
+            self.reaction_data.save(self.reaction_savefile)
+
         if self.mc.add_message(message["text"]):
-            self.mc.save(self.savefile)
+            self.mc.save(self.mc_savefile)
 
         self.messages_since_speak += 1
 

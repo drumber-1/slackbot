@@ -6,6 +6,7 @@ import websocket
 import socket
 import urllib.error
 
+
 class BotError(Exception):
     pass
 
@@ -49,6 +50,9 @@ class BasicBot(object):
     def saypush(self, text):
         self.say(text)
         self.push()
+
+    def add_reaction(self, reaction, channel, ts):
+        self.sc.api_call("reactions.add", channel=channel, name=reaction, timestamp=ts)
 
     def run_forever(self):
         while True:
