@@ -3,8 +3,9 @@ import pickle
 
 
 class ReactionData:
-    def __init__(self, message_floor=10):
+    def __init__(self, reaction_frequency_scale, message_floor=10):
         self.message_floor = message_floor
+        self.reaction_frequency_scale = reaction_frequency_scale
         self.total_messages = 0
         self.total_reactions = 0
         self.reaction_counts = {}
@@ -18,7 +19,7 @@ class ReactionData:
 
     def on_message(self):
         self.total_messages += 1
-        reaction_chance = self.total_reactions / max(self.total_messages, self.message_floor)
+        reaction_chance = self.reaction_frequency_scale * self.total_reactions / max(self.total_messages, self.message_floor)
         reaction_roll = random.random()
         should_react = reaction_roll < reaction_chance
         if should_react:

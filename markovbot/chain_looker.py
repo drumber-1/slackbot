@@ -94,7 +94,9 @@ if __name__ == "__main__":
 	mc = markovchain.MarkovChain(word_grouping=args.grouping)
 	mc.load(args.filename)
 	
-	pprint_dict(mc.chain)
+	import pdb; pdb.set_trace()
+
+	#pprint_dict(mc.chain)
 	#mc.print_freq()
 	#filter_poison(mc.chain, regex="\\u[a-z0-9]{4}")
 	#filter_poison(mc.chain, regex="^James\.$")

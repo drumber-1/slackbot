@@ -9,7 +9,7 @@ import markovbot.reactiondata
 
 
 class MarkovBot(basicbot.BasicBot):
-    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True, reactions=False, twitter_api=None, twitter_delay=900, tweet_triggers=["heart", "+1"]):
+    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True, reactions=False, reaction_frequency_scale=1, twitter_api=None, twitter_delay=900, tweet_triggers=["heart", "+1"]):
         super(MarkovBot, self).__init__(api_key, channel)
 
         self.twitter_api = twitter_api
@@ -18,7 +18,7 @@ class MarkovBot(basicbot.BasicBot):
         self.recent_messages = {}
 
         if reactions:
-            self.reaction_data = markovbot.reactiondata.ReactionData()
+            self.reaction_data = markovbot.reactiondata.ReactionData(reaction_frequency_scale)
         else:
             self.reaction_data = None
 
@@ -98,7 +98,7 @@ class MarkovBot(basicbot.BasicBot):
 
         m = self.re_mention.search(message["text"])
         if m is not None:
-            print("(markovbot) message, \"" + message["text"].encode("utf-8") + "\",contains mention ignoring")
+            print("(markovbot) message, \"" + str(message["text"].encode("utf-8")) + "\",contains mention ignoring")
             return
 
         if self.reaction_data is not None:
@@ -140,10 +140,10 @@ class MarkovBot(basicbot.BasicBot):
             import tweepy
             try:
                 self.twitter_api.update_status(text)
-                print("(MarkovBot) Tweeted \"{}\"".format(text.encode('utf-8')))
+                print("(MarkovBot) Tweeted \"{}\"".format(str(text.encode('utf-8'))))
             except tweepy.error.TweepError as e:  # tweepy raises an exception if status is duplicate
-                print("(MarkovBot) Could not tweet \"{}\"".format(text.encode('utf-8')))
-                print("(MarkovBot) Error message: \"{}\", code: {}".format(e.message[0]['message'].encode('utf-8'), e.message[0]['code']))
+                print("(MarkovBot) Could not tweet \"{}\"".format(str(text.encode('utf-8'))))
+                print("(MarkovBot) Error message: \"{}\", code: {}".format(str(e.message[0]['message'].encode('utf-8')), e.message[0]['code']))
         else:
-            print("(MarkovBot) Would of liked to tweet \"{}\"".format(text.encode('utf-8')))
+            print("(MarkovBot) Would of liked to tweet \"{}\"".format(str(text.encode('utf-8'))))
 
