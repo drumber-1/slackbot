@@ -8,14 +8,12 @@ app = App(
     signing_secret=os.environ.get("SLACK_SIGNING_SECRET")
 )
 
-mark = MarkovBot()
+mark = MarkovBot(reactions=True)
 
 re_mention = re.compile("<[@!].+>")
 
 @app.message("")
 def on_message(client, message, say):
-    print("MESSAGE")
-
     # Ignore other bots
     if "bot_id" in message:
         return
@@ -30,14 +28,11 @@ def on_message(client, message, say):
 
 @app.event("app_mention")
 def on_mention(client, event, say):
-    print("MENTION")
     response = mark.on_mention()
     process_response(response, say, client.reactions_add, event["channel"], event["ts"])
 
 @app.event("reaction_added")
 def on_reaction(client, event, say):
-    print("REACTION")
-
     item_user = event["item_user"]
     self_user = client.auth_test()["user_id"]
 
