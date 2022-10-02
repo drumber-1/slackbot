@@ -48,7 +48,7 @@ def filter_empties(chain):
 	for ks in chain.keys():
 		if len(chain[ks]) == 0:
 			chain.pop(ks, None)
-			print ks
+			print(ks)
 			
 def filter_bad_keys(chain):
 	print("Filtering bad keys")
@@ -68,7 +68,7 @@ def print_bad_keys(chain):
 					continue
 				tuple_v = (v,)
 				if tuple_v not in chain:
-					print v
+					print(v)
 					
 def clean(chain):
 	filter_bad_keys(mc.chain)
