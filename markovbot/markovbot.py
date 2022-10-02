@@ -3,131 +3,85 @@ import random
 import re
 import pprint
 
-import basicbot
 import markovbot.markovchain as mchain
 import markovbot.reactiondata
 
 
-class MarkovBot(basicbot.BasicBot):
-    def __init__(self, api_key, channel, grouping=2, logfile=None, unprompted=True, reactions=False, reaction_frequency_scale=1, twitter_api=None, twitter_delay=900, tweet_triggers=["heart", "+1"]):
-        super(MarkovBot, self).__init__(api_key, channel)
-
+class MarkovBot():
+    def __init__(self, grouping=2, unprompted=True, reactions=False, reaction_frequency_scale=1, twitter_api=None, twitter_delay=900, tweet_triggers=["heart", "+1"]):
+        # twitter data
         self.twitter_api = twitter_api
         self.twitter_delay = twitter_delay
         self.tweet_triggers = tweet_triggers
         self.recent_messages = {}
 
+        # Unprompted replies data
+        self.messages_since_speak = 0
+        self.unprompted = unprompted
+
+        # main chain data
+        self.mc = mchain.MarkovChain(word_grouping=grouping)
+        self.mc_savefile = "markovbot/chain.dat"
+        if os.path.isfile(self.mc_savefile):
+            self.mc.load(self.mc_savefile)
+
+        # reactions data
         if reactions:
             self.reaction_data = markovbot.reactiondata.ReactionData(reaction_frequency_scale)
         else:
             self.reaction_data = None
 
-        self.mc_savefile = "markovbot/chain.dat"
         self.reaction_savefile = "markovbot/reactions.dat"
-        if logfile is not None:
-            self.message_log = open(logfile, "w")
-        else:
-            self.message_log = None
-
-        self.messages_since_speak = 0
-        self.unprompted = unprompted
-
-        self.mc = mchain.MarkovChain(word_grouping=grouping)
-
-        self.re_mention = re.compile("<[@!].+>")
-
-        if os.path.isfile(self.mc_savefile):
-            self.mc.load(self.mc_savefile)
-
         if self.reaction_data is not None and os.path.isfile(self.reaction_savefile):
             self.reaction_data.load(self.reaction_savefile)
 
-    def add_recent_message(self, new_message):
-        self.recent_messages = {ts: self.recent_messages[ts] for ts in self.recent_messages if float(new_message["ts"]) - float(ts) < self.twitter_delay}
-        self.recent_messages[new_message["ts"]] = new_message["text"]
+    def on_message(self, text):
+        response = {"message" : None, "reaction" : None}
 
-    def process_event(self, event):
-        if "type" in event:  # Errors / message confirmation don't have type
-            if event["type"] == "message":
-                self.process_message(event)
-            elif event["type"] == "reaction_added":
-                self.process_reaction(event)
-        elif "text" in event and "reply_to" in event and "ts" in event:  # message confirmation
-            self.add_recent_message(event)
-
-    def process_reaction(self, reaction):
-        if reaction["user"] == self.id:
-            return
-
-        if self.reaction_data is not None:
-            self.reaction_data.on_reaction(reaction["reaction"])
-
-        if reaction["reaction"] in self.tweet_triggers:
-            if "ts" not in reaction["item"]:
-                print("Reaction has no timestamp")
-                return
-            message_ts = reaction["item"]["ts"]
-            if message_ts in self.recent_messages:
-                time_delay = float(reaction["event_ts"]) - float(message_ts)
-                if time_delay < self.twitter_delay:
-                    message_text = self.recent_messages[message_ts]
-                    self.send_tweet(message_text)
-                    self.recent_messages.pop(message_ts)
-
-    def process_message(self, message):
-        if "subtype" in message:
-            return
-        if message["channel"] != self.channel_id:  # Skip private messages and groups
-            print("(markovbot) Got non-target channel message from " + self.get_users()[message["user"]].name + ":")
-            print("\t" + message["text"])
-            return
-        if "reply_to" in message:
-            if message["reply_to"] is None:
-                return
-            else:
-                print("Reply to not None, is: " + str(message["reply_to"]))
-        if message["user"] == "USLACKBOT":  # Ignore slackbot
-            return
-
-        if len(message["text"].split()) > 25:
-            return
-
-        if self.id in message["text"]:
-            self.speak(message)
-            return
-
-        m = self.re_mention.search(message["text"])
-        if m is not None:
-            print("(markovbot) message, \"" + str(message["text"].encode("utf-8")) + "\",contains mention ignoring")
-            return
-
+        # Check if we want to react to the new message
         if self.reaction_data is not None:
             reaction = self.reaction_data.on_message()
             if reaction is not None:
-                self.add_reaction(reaction, self.channel_id, message["ts"])
+                response["reaction"] = reaction
             self.reaction_data.save(self.reaction_savefile)
 
-        if self.mc.add_message(message["text"]):
+        # ignore long messages (potential spam)
+        if len(text.split()) > 25:
+            return response
+
+        # add message to brain
+        if self.mc.add_message(text):
             self.mc.save(self.mc_savefile)
 
         self.messages_since_speak += 1
 
         if self.should_speak():
-            self.speak(message)
+            response["message"] = self.speak()
 
-    def speak(self, message):
+        return response
+
+    def on_mention(self):
+        response = {"message" : None, "reaction" : None}
+        response["message"] = self.speak()
+
+        return response
+
+    def on_reaction(self, reaction, ts, message, message_ts, reactOnSelf):
+        response = {"message" : None, "reaction" : None}
+        if self.reaction_data is not None:
+            self.reaction_data.on_reaction(reaction)
+        
+        if reactOnSelf and reaction in self.tweet_triggers:
+            time_delay = ts - message_ts
+            if time_delay < self.twitter_delay:
+                self.send_tweet(message)
+
+        return response
+
+    def speak(self):
         text = self.mc.generate_text()
-        self.saypush(text)
-
-        if self.message_log is not None:
-            self.message_log.write("Responding to:\n")
-            pprint.pprint(message, self.message_log)
-            self.message_log.write("With:\n")
-            self.message_log.write(str(text.encode("utf-8")))
-            self.message_log.write("\n\n********************\n")
-            self.message_log.flush()
-
         self.messages_since_speak = 0
+        return text
 
     def should_speak(self):
         if self.unprompted and self.messages_since_speak > 20 and random.randint(0, 50) == 0:
@@ -146,4 +100,3 @@ class MarkovBot(basicbot.BasicBot):
                 print("(MarkovBot) Error message: \"{}\", code: {}".format(str(e.message[0]['message'].encode('utf-8')), e.message[0]['code']))
         else:
             print("(MarkovBot) Would of liked to tweet \"{}\"".format(str(text.encode('utf-8'))))
-
