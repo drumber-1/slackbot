@@ -1,5 +1,6 @@
 import os
 import re
+
 from slack_bolt import App
 from markovbot.markovbot import MarkovBot
 
@@ -56,6 +57,6 @@ def process_response(response, say_func, react_func, channel, timestamp):
     if response["reaction"]:
         react_func(channel=channel, name=response["reaction"], timestamp=timestamp)
 
-# Start your app
+# Start bot for local testing
 if __name__ == "__main__":
     app.start(port=int(os.environ.get("PORT", 3000)))
