@@ -1,0 +1,2 @@
+global mark
+mark = None
