@@ -21,7 +21,7 @@ class MarkovBot():
 
         # main chain data
         self.mc = mchain.MarkovChain(word_grouping=grouping)
-        self.mc_savefile = "markovbot/chain.dat"
+        self.mc_savefile = "data/chain.dat"
         if os.path.isfile(self.mc_savefile):
             self.mc.load(self.mc_savefile)
 
@@ -31,7 +31,7 @@ class MarkovBot():
         else:
             self.reaction_data = None
 
-        self.reaction_savefile = "markovbot/reactions.dat"
+        self.reaction_savefile = "data/reactions.dat"
         if self.reaction_data is not None and os.path.isfile(self.reaction_savefile):
             self.reaction_data.load(self.reaction_savefile)
 
