@@ -30,6 +30,7 @@ class ReactionData:
                 if reaction_roll < cumulative:
                     return r
             print("Ran out of reactions (This shouldn't happen!)")
+            import pdb; pdb.set_trace()
         return None
 
     def save(self, filename):

@@ -1,5 +1,4 @@
 *.pyc
 *~
 .venv/
-markovbot/chain.dat
-markovbot/reactions.dat
+data/
