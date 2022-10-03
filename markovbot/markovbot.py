@@ -8,7 +8,16 @@ import markovbot.reactiondata
 
 
 class MarkovBot():
-    def __init__(self, grouping=2, unprompted=True, reactions=False, reaction_frequency_scale=1, twitter_api=None, twitter_delay=900, tweet_triggers=["heart", "+1"]):
+    def __init__(self,
+                mc_savefile="data/chain.dat",
+                reaction_savefile="data/reactions.dat",
+                grouping=2,
+                unprompted=True,
+                reactions=False,
+                reaction_frequency_scale=1,
+                twitter_api=None,
+                twitter_delay=900,
+                tweet_triggers=["heart", "+1"]):
         # twitter data
         self.twitter_api = twitter_api
         self.twitter_delay = twitter_delay
@@ -21,7 +30,7 @@ class MarkovBot():
 
         # main chain data
         self.mc = mchain.MarkovChain(word_grouping=grouping)
-        self.mc_savefile = "data/chain.dat"
+        self.mc_savefile = mc_savefile
         if os.path.isfile(self.mc_savefile):
             self.mc.load(self.mc_savefile)
 
@@ -31,7 +40,7 @@ class MarkovBot():
         else:
             self.reaction_data = None
 
-        self.reaction_savefile = "data/reactions.dat"
+        self.reaction_savefile = reaction_savefile
         if self.reaction_data is not None and os.path.isfile(self.reaction_savefile):
             self.reaction_data.load(self.reaction_savefile)
 

@@ -9,7 +9,8 @@ app = App(
     signing_secret=os.environ.get("SLACK_SIGNING_SECRET")
 )
 
-mark = MarkovBot(reactions=True)
+# This will be our markovbot, allow other modules to initialise this
+mark = None 
 
 re_mention = re.compile("<[@!].+>")
 
@@ -59,4 +60,5 @@ def process_response(response, say_func, react_func, channel, timestamp):
 
 # Start bot for local testing
 if __name__ == "__main__":
+    mark = MarkovBot(reactions=True)
     app.start(port=int(os.environ.get("PORT", 3000)))
