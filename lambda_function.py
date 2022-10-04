@@ -1,22 +1,26 @@
-from slack_bolt.adapter.aws_lambda import SlackRequestHandler
+import os
 import logging
+
+from slack_bolt import App
+from slack_bolt.adapter.aws_lambda import SlackRequestHandler
+from markovbot.markovbot import MarkovBot
+
+import slackfunctions
 
 # AWS handler
 SlackRequestHandler.clear_all_log_handlers()
 logging.basicConfig(format="%(asctime)s %(message)s", level=logging.DEBUG)
 
-from slack_bolt import App
-from markovbot.markovbot import MarkovBot
-
-import slackfunctions
-
 app = App(
     token=os.environ.get("SLACK_BOT_TOKEN"),
-    signing_secret=os.environ.get("SLACK_SIGNING_SECRET")
+    signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
+    process_before_response=True
 )
 
 # TODO fix this up for S3
-mark = MarkovBot(reactions=True)
+mark = MarkovBot(mc_savefile="/tmp/chain.dat",
+                 reaction_savefile="/tmp/reactions.dat",
+                 reactions=True)
 slackfunctions.bind_events(app, mark)
 
 def lambda_handler(event, context):
