@@ -5,24 +5,24 @@ import config
 
 re_mention = re.compile("<[@!].+>")
 
-def on_message(client, message, say):
+def on_message(client, message):
     # Ignore other bots
     if "bot_id" in message:
         return
-
+    
     # Ignore messages with mentions in them
     m = re_mention.search(message["text"])
     if m is not None:
         return
 
     response = config.mark.on_message(message["text"])
-    process_response(response, say, client.reactions_add, message["channel"], message["ts"])
+    process_response(response, client, message["channel"], message["ts"])
 
-def on_mention(client, event, say):
+def on_mention(client, event):
     response = config.mark.on_mention()
-    process_response(response, say, client.reactions_add, event["channel"], event["ts"])
+    process_response(response, client, event["channel"], event["ts"])
 
-def on_reaction(client, event, say):
+def on_reaction(client, event):
     item_user = event["item_user"]
     self_user = client.auth_test()["user_id"]
 
@@ -38,13 +38,13 @@ def on_reaction(client, event, say):
                                        float(event["item"]["ts"]),
                                        item_user == self_user)
 
-    self.process_response(response, say, client.reactions_add, event["item"]["channel"], event["item"]["ts"])
+    process_response(response, client, event["item"]["channel"], event["item"]["ts"])
 
-def process_response(response, say_func, react_func, channel, timestamp):
+def process_response(response, client, channel, timestamp):
     if response["message"]:
-        say_func(response["message"])
+        client.chat_postMessage(channel=channel, text=response["message"])
     if response["reaction"]:
-        react_func(channel=channel, name=response["reaction"], timestamp=timestamp)
+        client.reactions_add(channel=channel, name=response["reaction"], timestamp=timestamp)
 
 def bind_events(app, mark):
     config.mark = mark

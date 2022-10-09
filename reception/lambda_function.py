@@ -10,7 +10,8 @@ from markovbot.markovbot import MarkovBot
 import slackfunctions
 import config
 
-logging.basicConfig(format="%(asctime)s %(message)s", level=logging.DEBUG)
+logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
+logging.root.setLevel(logging.INFO)
 
 app = App(
     token=os.environ.get("SLACK_BOT_TOKEN"),
@@ -63,14 +64,19 @@ def lambda_handler(event, context):
     body_str = event["Records"][0]["body"]
     slack_event = json.loads(body_str)
     
+    logging.info(event)
+    
     if not "type" in slack_event:
         logging.error("No type in event")
         logging.error(slack_event)
     elif slack_event["type"] == "message":
-        on_message(app.client, slack_event)
+         logging.info("message")
+         on_message(app.client, slack_event)
     elif slack_event["type"] == "app_mention":
+        logging.info("mention")
         on_mention(app.client, slack_event)
     elif slack_event["type"] == "reaction_added":
+        logging.info("reaction")
         on_reaction(app.client, slack_event)
     else:
         logging.error("Unhandled event type {}".format(slack_event["type"]))
